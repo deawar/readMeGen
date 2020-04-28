@@ -1,0 +1,32 @@
+{
+  "name": "readmegen",
+  "version": "1.0.0",
+  "description": "Node Application to autogenerate a readme.md",
+  "main": "index.js",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "dotenv": "^8.2.0",
+    "electron": "^8.2.3",
+    "electron-html-to": "^2.6.0",
+    "inquirer": "^7.1.0",
+    "open": "^7.0.3",
+    "standard": "^14.3.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "standard && node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deawar/readMeGen.git"
+  },
+  "keywords": [
+    "readme.md"
+  ],
+  "author": "Dean Warren",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/deawar/readMeGen/issues"
+  },
+  "homepage": "https://github.com/deawar/readMeGen#readme"
+}
