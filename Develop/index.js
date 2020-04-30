@@ -44,22 +44,23 @@ const questions = [
   },
   {
     type: "input",
-    message: "What will we use this Project for?",
+    message: "How will we use/run this Project?",
     name: "usage"
   },
   {
-    type: "input",
-    message: "What License do you want to apply to this Project?",
-    name: "license"
+    type: "list",
+    name: "license",
+    message: "GitHub suggest you always add a license to your project. \nWhat License do you want to apply to this Project?",
+    choices: ['Apache 2.0', 'GNU AGPLv3', 'GNU GPLv3', 'GPLv3', 'MIT', 'Mozilla Public License 2.0', 'The Unlicense'],
   },
   {
     type: "input",
-    message: "Do you have Contrubutors?",
+    message: "Would you like to add Contrubutors?\n(Enter their GitHub usernames separated by commas)",
     name: "contributors"
   },
   {
     type: "input",
-    message: "What License do you want to apply to this Project?",
+    message: "How do you run Tests?",
     name: "tests"
   },
 
