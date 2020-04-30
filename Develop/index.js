@@ -48,9 +48,10 @@ const questions = [
     name: "usage"
   },
   {
-    type: "input",
+    type: "list",
+    name: "license",
     message: "What License do you want to apply to this Project?",
-    name: "license"
+    choices: ['Apache 2.0', 'GNU AGPLv3', 'GNU GPLv3', 'GPLv3', 'MIT', 'Mozilla Public License 2.0', 'The Unlicense'],
   },
   {
     type: "input",
@@ -146,9 +147,9 @@ async function writeToFile (data, filename) {
       ${install}
 
       ## Usage
-      ```
+     
       ${usage}
-      ```
+      
 
       ## Credits
 
@@ -159,9 +160,9 @@ async function writeToFile (data, filename) {
       ${license}
 
       ## Tests
-      ```
+      
       ${test}
-      ```
+     
 
       `;
     fs.writeFile(filename, header + data, function (err) {
