@@ -17,11 +17,11 @@ console.log(process.env.SECRET_MESSAGE);
 const TOKEN = process.env.TOKEN;
 
 const questions = [
-  // {
-  //   type: "input",
-  //   message: "What is your Public GitHub Email?",
-  //   name: "email"
-  // },
+  {
+    type: "input",
+    message: "Please enter your GitHub username: ",
+    name: "username"
+  },
   {
     type: "input",
     message: "What is your Project's title?",
@@ -44,23 +44,23 @@ const questions = [
   },
   {
     type: "input",
-    message: "What will we use this Project for?",
+    message: "How will we use/run this Project?",
     name: "usage"
   },
   {
     type: "list",
     name: "license",
-    message: "What License do you want to apply to this Project?",
+    message: "GitHub suggest you always add a license to your project. \nWhat License do you want to apply to this Project?",
     choices: ['Apache 2.0', 'GNU AGPLv3', 'GNU GPLv3', 'GPLv3', 'MIT', 'Mozilla Public License 2.0', 'The Unlicense'],
   },
   {
     type: "input",
-    message: "Do you have Contrubutors?",
+    message: "Would you like to add Contrubutors?\n(Enter their GitHub usernames separated by commas)",
     name: "contributors"
   },
   {
     type: "input",
-    message: "What License do you want to apply to this Project?",
+    message: "How do you run Tests?",
     name: "tests"
   },
 
@@ -76,12 +76,13 @@ const getUsername = async (username) => {
       authorization: `token ${TOKEN}`  
     }})
     console.log(response.data)
-    const {login, avatar_url, repos_url, email} = response.data;
+    const {login, avatar_url, repos_url, email, name} = response.data;
       const gitInfo = {
         "login": login,
         "avatar_url": avatar_url,
         "repos_url": repos_url,
-        "email": email
+        "email": email,
+        "name" : name
       }; 
       return gitInfo
   }catch(err){
@@ -92,43 +93,45 @@ const getUsername = async (username) => {
 
 const getUserInput = async () => {
   try {
-  
-    const input = await inquirer.prompt({
-      type: "input",
-      message: "Please enter your GitHub username: ",
-      name: "username"
-    });
+    const input = await inquirer.prompt(questions
+      // type: "input",
+      // message: "Please enter your GitHub username: ",
+      // name: "username"
+    );
     // const currentUser = await getUsername(input.username)
     //console.log("In getUserInput: ",currentUser.user)
     writeToFile(input, "readME.md")
-  } catch (error){
+  } 
+  catch (error){
     console.log("In getUserInput catch error: ",error);
   }
 };
 
 const getProjectInfo = async () => {
   try {
-    const input = await inquirer.prompt(questions);
+    const input = await inquirer.prompt({questions});
   writeToFile(input, "readME.md")
-  } catch (error){
+  } 
+  catch (error){
   console.log("In getuserProjectInfo catch error: ", error);
   }
 }
   
 async function writeToFile (data, filename) {
   // console.log(data.projectName)
-  const {username, email, projectName, projectUrl} = data
+  const {username, email, projectName, projectUrl, name} = data
   const gitInfo = await getUsername(username); 
   console.log("gitinfo",gitInfo)
-
-  const avatar_url = !gitInfo ? "placeHolder" : gitInfo.avatar_url
+  const gitName = !gitInfo ? "Unknown Coder": gitInfo.name;
+  const gitEmail = !gitInfo ? "Private Email": gitInfo.email;
+  const avatar_url = !gitInfo ? "https://randomwordgenerator.com/picture.php" : gitInfo.avatar_url
   console.log("avatar url",avatar_url)
   const gitProject = await getProjectInfo(projectInfo);
   //const projectTitle = gitProject.projectTitle;
 
 
 
-  const header = `# ${projectName}                       [!${avatar_url}] 
+  const header = `# ${projectName}                       [!${avatar_url}] <a href="mailto:${gitEmail}">Email Me</a>
   
       ${projectDescription}
       [![GitHub issues](https://img.shields.io/github/issues/${username}/${projectName}?style=plastic)]({$projectUrl}/issues)
@@ -146,8 +149,8 @@ async function writeToFile (data, filename) {
       ## Installation
       ${install}
 
-      ## Usage
-     
+      ## Usage 
+       
       ${usage}
       
 
@@ -160,9 +163,10 @@ async function writeToFile (data, filename) {
       ${license}
 
       ## Tests
-      
-      ${test}
      
+      ${test}
+      <hr>
+      Repo owner is ${gitname}.
 
       `;
     fs.writeFile(filename, header + data, function (err) {
