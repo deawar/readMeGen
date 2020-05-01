@@ -54,14 +54,24 @@ const questions = [
   },
   {
     type: "input",
-    message: "Would you like to add Contrubutors, additional Modules or Tutorials?\n(Enter their GitHub usernames separated by commas)",
+    message: "Would you like to add Contrubutors or Tutorials?\n(Enter their GitHub usernames separated by commas)",
     name: "contributors"
+  },
+  {
+    type: "input",
+    message: "Would you like to add additional Modules requirements?\n(Enter their npmjs names separated by commas)",
+    name: "modules"
   },
   {
     type: "input",
     message: "How do you run Tests?",
     name: "tests"
   },
+  {
+    type: "confirm",
+    message: "Would you like to include the Contrubutor Covenant in your ReadMe?",
+    name: "conCovenant"
+  }
 
 ];
 
@@ -106,7 +116,7 @@ const getUserInput = async () => {
   
 async function writeToFile (data, filename) {
   
-  const {username, email, projectUrl, name} = data
+  const {username, email, projectUrl, name, conCovenant} = data
   const gitInfo = await getUsername(username); 
   console.log("Line 125 gitinfo: ",gitInfo)
   
@@ -123,7 +133,8 @@ async function writeToFile (data, filename) {
     let collaborators = !data.contributors ? "None Currently" : data.contributors;
     let license = data.license;
     let urprojectUrl = data.projectUrl;
-
+    //let conCovenant = data.conCovenant;
+    let conCovenantBadge = `[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg?style=plastic)](code_of_conduct.md) `;
     if(!tableOfContents){
       tableOfContents = "";
     }
@@ -133,7 +144,11 @@ async function writeToFile (data, filename) {
       tableOfContents = tableOfContents + "* [Credits](#credits)  \n";  
       tableOfContents = tableOfContents + "* [License](#license)  \n";
     }
-    
+    if(!conCovenant){
+      conCovenantBadge = "";
+
+    }
+    license = license + "(https://github.com/"  + username + "/"+ projectTitle + "/blob/master/LICENSE)"; 
     switch (license) {
       case 'Apache 2.0' :
         license = license + " -A permissive license whose main conditions require preservation of copyright and license notices. Contributors provide an express grant of patent rights. Licensed works, modifications, and larger works may be distributed under different terms and without source code.";
@@ -167,19 +182,24 @@ async function writeToFile (data, filename) {
     //build the file
     let header = "# " + projectTitle + ' \n '; 
     // ${projectDescription}
+    header = header + "## Badges  \n";
+    header = header + `[![GitHub issues](https://img.shields.io/github/issues/` + username + "/"+ projectTitle + `?style=plastic)](`+ urprojectUrl + `/network)`; //+ "\n";
+    header = header + `[![GitHub forks](https://img.shields.io/github/forks/` + username + "/" + projectTitle + `?style=plastic)](` + projectUrl + `/network)`; 
+    header = header + conCovenantBadge + "\n";
     header = header + "## Description  " + '\n';
     header = header + '  ' + projectDescription + '  \n';
     header = header + tableOfContents + "  \n";
     header = header + "## Installation  \n";
-    header = header + "  " + install + "  \n";
+    header = header + install + " \n";
     header = header + "## Usage  \n";
     header = header + usage + "  \n";
     header = header + "## Credits  \n";
     header = header +  collaborators + " \n ";
     header = header + "## License  \n";
     header = header + license + "  \n";
-    header = header + "## Badges  \n";
-    header = header + `[![GitHub issues](https://img.shields.io/github/issues/` + username + "/"+ projectTitle + `?style=plastic)](`+ urprojectUrl + `/network)`;
+    
+    
+    
       // [![GitHub forks](https://img.shields.io/github/forks/${username}/${projectTitle}?style=plastic)]({$projectUrl}/network)
       
     //![node-current](https://img.shields.io/node/v/inquirer?style=plastic)
