@@ -28,11 +28,11 @@ const questions = [
   },
   {
     type: "input",
-    message: "Describe your Project's purpose?",
+    message: "Description of yourProject's purpose?",
     name: "description"
   },
   {
-    type: "input",
+    type: "confirm",
     message: "Do you need a Table of Contents?",
     name: "tableOfContents"
   },
@@ -54,7 +54,7 @@ const questions = [
   },
   {
     type: "input",
-    message: "Would you like to add Contrubutors?\n(Enter their GitHub usernames separated by commas)",
+    message: "Would you like to add Contrubutors, additional Modules or Tutorials?\n(Enter their GitHub usernames separated by commas)",
     name: "contributors"
   },
   {
@@ -75,13 +75,15 @@ const getUsername = async (username) => {
       authorization: `token ${TOKEN}`  
     }})
     console.log(response.data)
-    const {login, avatar_url, repos_url, email, name} = response.data;
+    const {html_url, login, avatar_url, repos_url, email, name, bio} = response.data;
       const gitInfo = {
+        "html_url": html_url,
         "login": login,
         "avatar_url": avatar_url,
         "repos_url": repos_url,
         "email": email,
-        "name" : name
+        "name" : name,
+        "bio": bio
       }; 
       return gitInfo
   }catch(err){
@@ -93,12 +95,7 @@ const getUsername = async (username) => {
 const getUserInput = async () => {
   try {
     const input = await inquirer.prompt(questions
-      // type: "input",
-      // message: "Please enter your GitHub username: ",
-      // name: "username"
     );
-    // const currentUser = await getUsername(input.username)
-    //console.log("In getUserInput: ",currentUser.user)
     writeToFile(input, "readME.md")
   } 
   catch (error){
@@ -106,77 +103,132 @@ const getUserInput = async () => {
   }
 };
 
-const getProjectInfo = async () => {
-  try {
-    const input = await inquirer.prompt({questions});
-  writeToFile(input, "readME.md")
-  } 
-  catch (error){
-  console.log("In getuserProjectInfo catch error: ", error);
-  }
-}
   
 async function writeToFile (data, filename) {
-  // console.log(data.projectName)
-  const {username, email, projectName, projectUrl, name} = data
-  const gitInfo = await getUsername(username); 
-  console.log("gitinfo",gitInfo)
-  const gitName = !gitInfo ? "Unknown Coder": gitInfo.name;
-  const gitEmail = !gitInfo ? "Private Email": gitInfo.email;
-  const avatar_url = !gitInfo ? "https://randomwordgenerator.com/picture.php" : gitInfo.avatar_url
-  console.log("avatar url",avatar_url)
-  const gitProject = await getProjectInfo(projectInfo);
-  //const projectTitle = gitProject.projectTitle;
-
-
-
-  const header = `# ${projectName}                       [!${avatar_url}] <a href="mailto:${gitEmail}">Email Me</a>
   
-      ${projectDescription}
-      [![GitHub issues](https://img.shields.io/github/issues/${username}/${projectName}?style=plastic)]({$projectUrl}/issues)
-      [![GitHub forks](https://img.shields.io/github/forks/${username}/${projectName}?style=plastic)]({$projectUrl}/network)
-      
-      ##${descrition}
+  const {username, email, projectUrl, name} = data
+  const gitInfo = await getUsername(username); 
+  console.log("Line 125 gitinfo: ",gitInfo)
+  
+    //console.log("Sorry no data retrieved!", error);
+    const avatar_url = !gitInfo ? "https://randomwordgenerator.com/picture.php" : gitInfo.avatar_url
+  
+    const gitName = !gitInfo.name ? username : gitInfo.name;
+    const gitEmail = gitInfo.email;
+    let tableOfContents = data.tableOfContents;
+    let projectTitle = data.projectTitle;
+    let projectDescription = data.description;
+    let install = data.install;
+    let usage = data.usage;
+    let collaborators = !data.contributors ? "None Currently" : data.contributors;
+    let license = data.license;
 
-      ## Table of Contents
-      
-      * [Installation](#installation)
-      * [Usage](#usage)
-      * [Credits](#credits)
-      * [License](#license)
-      
-      ## Installation
-      ${install}
+    if(!tableOfContents){
+      tableOfContents = "";
+    }
+    else{
+      tableOfContents = "* [Installation](#installation)  ";
+      tableOfContents = tableOfContents + "* [Usage](#usage)  ";
+      tableOfContents = tableOfContents + "* [Credits](#credits)  ";  
+      tableOfContents = tableOfContents + "* [License](#license)  ";
+    }
+    
+    switch (license) {
+      case 'Apache 2.0' :
+        license = license + " -A permissive license whose main conditions require preservation of copyright and license notices. Contributors provide an express grant of patent rights. Licensed works, modifications, and larger works may be distributed under different terms and without source code.";
+        break;
+      case 'GNU AGPLv3' :
+        license = license + " -Permissions of this strongest copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. When a modified version is used to provide a service over a network, the complete source code of the modified version must be made available."; 
+        break;
+      case 'GNU GPLv3' : 
+        license = license + " -Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights.";
+        break;
+      case 'GPLv3' : 
+        license = license + " -Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights.";
+        break;
+      case 'MIT' : 
+        license = license + " -A short and simple permissive license with conditions only requiring preservation of copyright and license notices. Licensed works, modifications, and larger works may be distributed under different terms and without source code. ";
+        break;
+      case 'Mozilla Public License 2.0' : 
+        license = license + " -Permissions of this weak copyleft license are conditioned on making available source code of licensed files and modifications of those files under the same license (or in certain cases, one of the GNU licenses). Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. However, a larger work using the licensed work may be distributed under different terms and without source code for files added in the larger work.";
+        break;
+      default :  //'The Unlicense' 
+        license = license + " -A license with no conditions whatsoever which dedicates works to the public domain. Unlicensed works, modifications, and larger works may be distributed under different terms and without source code.";
+    }
+    
+    const test = data.tests;
 
-      ## Usage 
+
+    console.log("avatar url:",avatar_url);
+    console.log("data: ",data);
+    console.log ('Project Title :', projectTitle);
+    
+    //build the file
+    let header = "# " + projectTitle + ' \n '; 
+    // ${projectDescription}
+    header = header + "## Description  " + '\n';
+    header = header + '  ' + projectDescription + '  \n';
+    header = header + tableOfContents + "  \n";
+    header = header + "## Installation  \n";
+    header = header + "  " + install + "  \n";
+    header = header + "## Usage  \n";
+    header = header + usage + "  \n";
+    header = header + "## Credits  \n";
+    header = header +  collaborators + " \n ";
+    header = header + "## License  \n";
+    header = header + license + "  \n";
+    header = header + "## Badges  \n";
+    header = header + `[![GitHub issues](https://img.shields.io/github/issues/` + username + "/"+ projectTitle + `?style=plastic)]({$projectUrl}/network)`;
+      // [![GitHub forks](https://img.shields.io/github/forks/${username}/${projectTitle}?style=plastic)]({$projectUrl}/network)
+      
+    //![node-current](https://img.shields.io/node/v/inquirer?style=plastic)
+
+    //'[![GitHub issues](https://img.shields.io/github/issues/'itsjonkelley/RainChk?style=plastic)](https://github.com/itsjonkelley/RainChk/issues)
+      // 
+      // ##${projectDescription}
+
+      // ## Table of Contents
+      
+      // * [Installation](#installation)
+      // * [Usage](#usage)
+      // * [Credits](#credits)
+      // * [License](#license)
+      
+      // ## Installation
+      // ${install}
+
+      // ## Usage 
        
-      ${usage}
+      // ${usage}
       
 
-      ## Credits
+      // ## Credits
 
-      ${collaborators}
+      // ${collaborators}
 
-      ## License
+      // ## License
 
-      ${license}
+      // ${license}
 
-      ## Tests
+      // ## Tests
      
-      ${test}
-      <hr>
-      Repo owner is ${gitname}.
+      // ${test}
+      // <hr>
+      // Repo owner is ${gitName}.
+      //[![GitHub issues](https://img.shields.io/github/issues/${username}/${projectTitle}?style=plastic)]({$projectUrl}/issues)
+      // [![GitHub forks](https://img.shields.io/github/forks/${username}/${projectTitle}?style=plastic)]({$projectUrl}/network)
+      
 
-      `;
+      // `;
     fs.writeFile(filename, header + data, function (err) {
       if (err) {
         return console.log(err);
       }
-  } )
+    })
 }
 
 function init() {
   getUserInput();
 }
-
-init();
+console.clear();
+init()
