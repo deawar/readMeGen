@@ -148,7 +148,7 @@ async function writeToFile (data, filename) {
       conCovenantBadge = "";
 
     }
-    license = license + "(https://github.com/"  + username + "/"+ projectTitle + "/blob/master/LICENSE)"; 
+    license = "[" +  license + "]" + "(https://github.com/"  + username + "/"+ projectTitle + "/blob/master/LICENSE)"; 
     switch (license) {
       case 'Apache 2.0' :
         license = license + " -A permissive license whose main conditions require preservation of copyright and license notices. Contributors provide an express grant of patent rights. Licensed works, modifications, and larger works may be distributed under different terms and without source code.";
