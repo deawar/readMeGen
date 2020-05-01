@@ -122,15 +122,16 @@ async function writeToFile (data, filename) {
     let usage = data.usage;
     let collaborators = !data.contributors ? "None Currently" : data.contributors;
     let license = data.license;
+    let urprojectUrl = data.projectUrl;
 
     if(!tableOfContents){
       tableOfContents = "";
     }
     else{
-      tableOfContents = "* [Installation](#installation)  ";
-      tableOfContents = tableOfContents + "* [Usage](#usage)  ";
-      tableOfContents = tableOfContents + "* [Credits](#credits)  ";  
-      tableOfContents = tableOfContents + "* [License](#license)  ";
+      tableOfContents = "* [Installation](#installation)  \n";
+      tableOfContents = tableOfContents + "* [Usage](#usage)  \n";
+      tableOfContents = tableOfContents + "* [Credits](#credits)  \n";  
+      tableOfContents = tableOfContents + "* [License](#license)  \n";
     }
     
     switch (license) {
@@ -178,7 +179,7 @@ async function writeToFile (data, filename) {
     header = header + "## License  \n";
     header = header + license + "  \n";
     header = header + "## Badges  \n";
-    header = header + `[![GitHub issues](https://img.shields.io/github/issues/` + username + "/"+ projectTitle + `?style=plastic)]({$projectUrl}/network)`;
+    header = header + `[![GitHub issues](https://img.shields.io/github/issues/` + username + "/"+ projectTitle + `?style=plastic)](`+ urprojectUrl + `/network)`;
       // [![GitHub forks](https://img.shields.io/github/forks/${username}/${projectTitle}?style=plastic)]({$projectUrl}/network)
       
     //![node-current](https://img.shields.io/node/v/inquirer?style=plastic)
@@ -219,8 +220,8 @@ async function writeToFile (data, filename) {
       // [![GitHub forks](https://img.shields.io/github/forks/${username}/${projectTitle}?style=plastic)]({$projectUrl}/network)
       
 
-      // `;
-    fs.writeFile(filename, header + data, function (err) {
+      // `; + data
+    fs.writeFile(filename, header, function (err) {
       if (err) {
         return console.log(err);
       }

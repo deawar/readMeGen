@@ -1,14 +1,18 @@
-# readMeGen 
+# RainChk 
  ## Description  
-  Generates a Readme.md  
-* [Installation](#installation)  * [Usage](#usage)  * [Credits](#credits)  * [License](#license)    
+  Rainchecker  
+* [Installation](#installation)  
+* [Usage](#usage)  
+* [Credits](#credits)  
+* [License](#license)  
+  
 ## Installation  
-  '''npm install'''  
+  fork and clone project  
 ## Usage  
-```node index.js```  
+open in webbrowser  
 ## Credits  
-itsjonkelley, ankmud01, atmurray-fullstack 
+deawar, mariaiofrio, BobbyBlu14 
  ## License  
 MIT -A short and simple permissive license with conditions only requiring preservation of copyright and license notices. Licensed works, modifications, and larger works may be distributed under different terms and without source code.   
 ## Badges  
-[![GitHub issues](https://img.shields.io/github/issues/deawar/readMeGen?style=plastic)]({$projectUrl}/network)[object Object]
+[![GitHub issues](https://img.shields.io/github/issues/itsjonkelley/RainChk?style=plastic)](undefined/network)
