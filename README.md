@@ -1,18 +1,29 @@
-# readmeGen 
+# RainChk II 
  ## Badges  
-[![GitHub issues](https://img.shields.io/github/issues/deawar/readmeGen?style=plastic)](undefined/network)[![GitHub forks](https://img.shields.io/github/forks/deawar/readmeGen?style=plastic)](undefined/network)[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg?style=plastic)](code_of_conduct.md) 
+[![GitHub issues](https://img.shields.io/github/issues/itsjonkelley/RainChk II?style=plastic)](undefined/network)[![GitHub forks](https://img.shields.io/github/forks/itsjonkelley/RainChk II?style=plastic)](undefined/network)[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg?style=plastic)](code_of_conduct.md) 
 ## Description  
-  readmegen  
+  rain checker  
 * [Installation](#installation)  
 * [Usage](#usage)  
 * [Credits](#credits)  
 * [License](#license)  
+* [Contributing](#contributing)  
+* [Questions](#questions) 
   
 ## Installation  
-npm install 
+``` 
+git clone and go to work 
+``` 
 ## Usage  
-node index.js  
+``` 
+open web browser 
+``` 
 ## Credits  
-Hugo Dias 
+deawar, BobbyBlu14 
  ## License  
-[MIT](https://github.com/deawar/readmeGen/blob/master/LICENSE) -A license with no conditions whatsoever which dedicates works to the public domain. Unlicensed works, modifications, and larger works may be distributed under different terms and without source code.  
+[MIT](https://github.com/itsjonkelley/RainChk%20II/blob/master/LICENSE) -A license with no conditions whatsoever which dedicates works to the public domain. Unlicensed works, modifications, and larger works may be distributed under different terms and without source code.  
+## Contrubuting Guidelines 
+ This Repo proudly follows the [Contributor Covenant](https://www.contributor-covenant.org/) which is an industry standard. 
+ 
+## Questions 
+![itsjonkelley](https://avatars3.githubusercontent.com/u/60291229?v=4&s=48)  [itsjonkelley](mailto:jonathankelley87@gmail.com) or  click on [@itsjonkelley](https://github.com/itsjonkelley)

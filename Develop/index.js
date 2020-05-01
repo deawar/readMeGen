@@ -72,7 +72,7 @@ const questions = [
   {
     type: "confirm",
     message: "Would you like to include the Contrubutor Covenant in your ReadMe?",
-    name: "conCovenant"
+    name: "conCov"
   }
 
 ];
@@ -118,25 +118,40 @@ const getUserInput = async () => {
   
 async function writeToFile (data, filename) {
   
-  const {username, email, projectUrl, name, conCovenant} = data
+  const {username, email, projectUrl, name, conCov} = data
   const gitInfo = await getUsername(username); 
   console.log("Line 125 gitinfo: ",gitInfo)
   
     //console.log("Sorry no data retrieved!", error);
     const avatar_url = !gitInfo ? "https://randomwordgenerator.com/picture.php" : gitInfo.avatar_url
-  
+    const gituserUrl = gitInfo.html_url;
     const gitName = !gitInfo.name ? username : gitInfo.name;
     const gitEmail = gitInfo.email;
     let tableOfContents = data.tableOfContents;
-    let projectTitle = data.projectTitle;
+    let projectTitle = data.projectTitle; //Todo parse string to remove spaces and replace with %20
     let projectDescription = data.description;
     let install = data.install;
     let usage = data.usage;
     let collaborators = !data.contributors ? "None Currently" : data.contributors;
     let license = data.license;
     let urprojectUrl = data.projectUrl;
-    //let conCovenant = data.conCovenant;
+    let questionsTOC = "* [Questions](#questions) \n";
+    let questions = "## Questions \n";
+    let questionsLink = "![" + gitName +"](" + avatar_url + "&s=48)  [" + gitName + "](mailto:" + gitEmail + ") or  click on [@" + gitName + "]("+ gituserUrl+ ")";
+    //Community Contribution Guidelines
     let conCovenantBadge = `[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg?style=plastic)](code_of_conduct.md) `;
+    let conCovenant = "## Contrubuting Guidelines \n This Repo proudly follows the [Contributor Covenant](https://www.contributor-covenant.org/) which is an industry standard. \n";
+    let conCovTOC = "* [Contributing](#contributing)  \n";
+    if(!conCov){
+      conCovenantBadge = "";
+      conCovenant = "";
+      conCovTOC = "";
+    }
+    // else{
+    //   conCovTOC = tableOfContents + "* [Contributing](#contributing)  \n";
+      
+    // }
+    //build Table of Contents
     if(!tableOfContents){
       tableOfContents = "";
     }
@@ -145,10 +160,8 @@ async function writeToFile (data, filename) {
       tableOfContents = tableOfContents + "* [Usage](#usage)  \n";
       tableOfContents = tableOfContents + "* [Credits](#credits)  \n";  
       tableOfContents = tableOfContents + "* [License](#license)  \n";
-    }
-    if(!conCovenant){
-      conCovenantBadge = "";
-
+      tableOfContents = tableOfContents + conCovTOC; 
+      tableOfContents = tableOfContents + questionsTOC;  
     }
     license = "[" +  license + "]" + "(https://github.com/"  + username + "/"+ projectTitle + "/blob/master/LICENSE)"; 
     switch (license) {
@@ -192,13 +205,16 @@ async function writeToFile (data, filename) {
     header = header + '  ' + projectDescription + '  \n';
     header = header + tableOfContents + "  \n";
     header = header + "## Installation  \n";
-    header = header + install + " \n";
+    header = header + "\`\`\` \n" + install + " \n" + "\`\`\` \n";
     header = header + "## Usage  \n";
-    header = header + usage + "  \n";
+    header = header + "\`\`\` \n" + usage + " \n" + "\`\`\` \n";
     header = header + "## Credits  \n";
     header = header +  collaborators + " \n ";
     header = header + "## License  \n";
     header = header + license + "  \n";
+    header = header + conCovenant + " \n";
+    header = header + questions + questionsLink;
+
     
     
     
@@ -236,13 +252,7 @@ async function writeToFile (data, filename) {
       // ## Tests
      
       // ${test}
-      // <hr>
-      // Repo owner is ${gitName}.
-      //[![GitHub issues](https://img.shields.io/github/issues/${username}/${projectTitle}?style=plastic)]({$projectUrl}/issues)
-      // [![GitHub forks](https://img.shields.io/github/forks/${username}/${projectTitle}?style=plastic)]({$projectUrl}/network)
-      
-
-      // `; + data
+     
     fs.writeFile(filename, header, function (err) {
       if (err) {
         return console.log(err);
@@ -250,7 +260,16 @@ async function writeToFile (data, filename) {
       else {
         console.log(
           chalk.blueBright(
-            figlet.textSync("ReadMe Complete!!", {
+            figlet.textSync( projectTitle, {
+              font: "Doom",
+              horizontalLayout: "default",
+              verticalLayout: "default"
+            })
+          )
+        );
+        console.log(
+          chalk.blueBright(
+            figlet.textSync( "ReadMe Complete!!", {
               font: "Doom",
               horizontalLayout: "default",
               verticalLayout: "default"
