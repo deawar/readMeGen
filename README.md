@@ -1,6 +1,6 @@
 # RainChk II 
  ## Badges  
-[![GitHub issues](https://img.shields.io/github/issues/itsjonkelley/RainChk II?style=plastic)](undefined/network)[![GitHub forks](https://img.shields.io/github/forks/itsjonkelley/RainChk II?style=plastic)](undefined/network)[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg?style=plastic)](code_of_conduct.md) 
+[![GitHub issues](https://img.shields.io/github/issues/itsjonkelley/RainChk%20II?style=plastic)](undefined/network)[![GitHub forks](https://img.shields.io/github/forks/itsjonkelley/RainChk%20II?style=plastic)](undefined/network)[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg?style=plastic)](code_of_conduct.md) 
 ## Description  
   rain checker  
 * [Installation](#installation)  
