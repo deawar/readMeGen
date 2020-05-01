@@ -6,7 +6,9 @@
 
 */
 const axios = require('axios');
-require('dotenv').config()
+require('dotenv').config();
+const figlet = require("figlet");
+const chalk = require("chalk");
 //const electron = require('electron');
 //const electronHtmlTo = require('electron-html-to');
 const inquirer = require('inquirer');
@@ -245,6 +247,17 @@ async function writeToFile (data, filename) {
       if (err) {
         return console.log(err);
       }
+      else {
+        console.log(
+          chalk.blueBright(
+            figlet.textSync("ReadMe Complete!!", {
+              font: "Doom",
+              horizontalLayout: "default",
+              verticalLayout: "default"
+            })
+          )
+        );
+      }
     })
 }
 
@@ -252,4 +265,13 @@ function init() {
   getUserInput();
 }
 console.clear();
+console.log(
+  chalk.redBright(
+    figlet.textSync("ReadMe Generator", {
+      font: "Doom",
+      horizontalLayout: "default",
+      verticalLayout: "default"
+    })
+  )
+);
 init()
