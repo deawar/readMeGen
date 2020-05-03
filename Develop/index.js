@@ -43,9 +43,9 @@ const questions = [
   },
   {
     type: "input",
-    message: "How do we Install your project?\n Default will be 'To Do...'",
+    message: "How do we Install your project?\n Default will be 'npm install'",
     name: "install",
-    default: "To Do..."
+    default: "npm install"
   },
   {
     type: "input",
@@ -63,7 +63,7 @@ const questions = [
   },
   {
     type: "input",
-    message: "Would you like to add Contrubutors or Tutorials?\nThese names will show up under the credit heading.\n(Enter their GitHub usernames separated by commas',')",
+    message: "Would you like to add Contrubutors or Tutorials?\nThese names will show up under the 'Credit' heading.\n(Enter their GitHub usernames separated by commas',')",
     name: "contributors"
   },
   {
@@ -139,14 +139,22 @@ async function writeToFile (data, filename) {
     let collaborators = "";
     }
     else{
-      creditTOC = tableOfContents + "* [Credit](#credit)  \n";
+      creditTOC = "* [Credit](#credit)  \n";
       let credit = collaborators.split(", ");
-      credit.forEach(await function api(names){
-        credit = "![" + names.name +"](" + names.avatar_url + "&s=48) " + names.credit + "\n";
-      });
+      credit.forEach(function (collaborators, index){
+        let name = collaborators[index];
+        console.log("Credit: ",name);
+        //names = await api(username);
+        //credit = "![" + names.name +"](" + names.avatar_url + "&s=48) " + names.credit + "\n";
+        credit = credit + "* " + collaborators[index] + "\n";
+      })
+      // credit.forEach(await function api(names){
+      //   credit = "![" + names.name +"](" + names.avatar_url + "&s=48) " + names.credit + "\n";
+      //   console.log("Line 146 credit: ",credit);
+      // });
     }
     let mods = "";
-    let modulesTOC = "## Dependencies \n";
+    let modulesTOC = "* [Dependencies](#dependencies)  \n";
     let modules = data.modules;
     if(!modules){
       modulesTOC = "";
@@ -234,7 +242,8 @@ async function writeToFile (data, filename) {
     header = header + "\`\`\` \n" + install + " \n" + "\`\`\` \n";
     header = header + "## Usage  \n";
     header = header + "\`\`\` \n" + usage + " \n" + "\`\`\` \n";
-    header = header + "## Credits  \n";
+    header = header + "## Credit  \n";
+    //header = header + credit + "  \n";
     header = header +  collaborators + " \n ";
     header = header + "## License  \n";
     header = header + license + "  \n";
