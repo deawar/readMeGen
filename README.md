@@ -2,7 +2,7 @@
  ## Badges  
 [![GitHub issues](https://img.shields.io/github/issues/deawar/ReadMeGen?style=plastic)](undefined/network)[![GitHub forks](https://img.shields.io/github/forks/deawar/ReadMeGen?style=plastic)](undefined/network)[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg?style=plastic)](code_of_conduct.md) 
 ## Description  
-  To easily and quickly create a beautiful ReadME.md. \n When I start a new project, \n then I want to easily and quickly create a ReadME.md.  
+  To create a beautiful ReadME.md quickly and easily. When I start a new project, Then I want to quickly and easily create a ReadME.md file.  
 * [Installation](#installation)  
 * [Usage](#usage)  
 * [Credit](#credit)  
@@ -20,7 +20,7 @@ npm install
 node index.js 
 ``` 
 ## Credit  
-deawar, itsjonkelley, ankmud03 
+itsjonkelley 
  ## License  
 [MIT](https://github.com/deawar/ReadMeGen/blob/master/LICENSE) -A license with no conditions whatsoever which dedicates works to the public domain. Unlicensed works, modifications, and larger works may be distributed under different terms and without source code.
   
@@ -29,8 +29,8 @@ deawar, itsjonkelley, ankmud03
  
 ## Dependencies  
 * axios
-* chalk
 * inquirer
+* chalk
 * dotenv
 * figlet
 ## Questions 
