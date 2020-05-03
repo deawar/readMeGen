@@ -5,6 +5,8 @@
 -Populate Readme.medium
 
 */
+const api = require("./utils/api.js");
+
 const axios = require('axios');
 require('dotenv').config();
 const figlet = require("figlet");
@@ -26,12 +28,13 @@ const questions = [
   {
     type: "input",
     message: "What is your Project's title?",
-    name: "projectTitle"
+    name: "projectTitle",
   },
   {
     type: "input",
-    message: "Description of yourProject's purpose?",
-    name: "description"
+    message: "Description of yourProject's purpose?\n Default will be 'To be written...'",
+    name: "description",
+    default: "To be Written...",
   },
   {
     type: "confirm",
@@ -40,23 +43,27 @@ const questions = [
   },
   {
     type: "input",
-    message: "How do we Install your project?",
-    name: "install"
+    message: "How do we Install your project?\n Default will be 'To Do...'",
+    name: "install",
+    default: "To Do..."
   },
   {
     type: "input",
-    message: "How will we use/run this Project?",
-    name: "usage"
+    message: "How will we use/run this Project?\n Default will be 'node index.js'.",
+    name: "usage",
+    default: "node index.js"
+
   },
   {
     type: "list",
     name: "license",
-    message: "GitHub suggest you always add a license to your project. \nWhat License do you want to apply to this Project?",
-    choices: ['Apache 2.0', 'GNU AGPLv3', 'GNU GPLv3', 'GPLv3', 'MIT', 'Mozilla Public License 2.0', 'The Unlicense'],
+    message: "GitHub suggest you always add a license to your project. \nWhat License do you want to apply to this Project?\n Default is MIT.",
+    choices: ['MIT','Apache 2.0', 'GNU AGPLv3', 'GNU GPLv3', 'GPLv3', 'Mozilla Public License 2.0', 'The Unlicense'],
+    default: 'MIT',
   },
   {
     type: "input",
-    message: "Would you like to add Contrubutors or Tutorials?\n(Enter their GitHub usernames separated by commas)",
+    message: "Would you like to add Contrubutors or Tutorials?\nThese names will show up under the credit heading.\n(Enter their GitHub usernames separated by commas',')",
     name: "contributors"
   },
   {
@@ -66,8 +73,9 @@ const questions = [
   },
   {
     type: "input",
-    message: "How do you run Tests?",
-    name: "tests"
+    message: "How do you run Tests?\n Default is 'npm test'.",
+    name: "tests",
+    default: "npm test"
   },
   {
     type: "confirm",
@@ -77,37 +85,27 @@ const questions = [
 
 ];
 
-const getUsername = async (username) => {
-  const gitUrl = `https://api.github.com/users/${username}`; //${TOKEN}
-  try{
-    const response = await axios({
-      method: "get",
-      url: gitUrl,
-      headers: {
-      authorization: `token ${TOKEN}`  
-    }})
-    console.log(response.data)
-    const {html_url, login, avatar_url, repos_url, email, name, bio} = response.data;
-      const gitInfo = {
-        "html_url": html_url,
-        "login": login,
-        "avatar_url": avatar_url,
-        "repos_url": repos_url,
-        "email": email,
-        "name" : name,
-        "bio": bio
-      }; 
-      return gitInfo
-  }catch(err){
-    console.log(err)
-    return null
-  }
-};
+const retryUserName = [
+  {
+    type: "input",
+    message: "Please enter your GitHub username: ",
+    name: "username"
+  }];
 
 const getUserInput = async () => {
   try {
-    const input = await inquirer.prompt(questions
-    );
+    const input = await inquirer.prompt(questions);
+    if (input === null) {
+      console.log("GitHub username does not exist.", input);
+      const usernameRetry = async () => {
+        try{
+          const input = await inquirer.prompt(retryUserName);
+        }
+        catch (error) {
+          console.log (error);
+        }
+      }
+    }
     writeToFile(input, "readME.md")
   } 
   catch (error){
@@ -118,26 +116,55 @@ const getUserInput = async () => {
   
 async function writeToFile (data, filename) {
   
-  const {username, email, projectUrl, name, conCov} = data
-  const gitInfo = await getUsername(username); 
-  console.log("Line 125 gitinfo: ",gitInfo)
-  
+  const {username, projectUrl, conCov} = data
+  //const gitInfo = await getUsername(username); <--was working 
+  // const gitInfo = async () => {
+
+  // };
+  //console.log("Line 125 gitinfo: ",gitInfo())
+  const result = await api(username);
+  const avatar_url = !result ? "https://randomwordgenerator.com/picture.php" : result.avatar_url
+  const gituserUrl = result.html_url;
+  const gitName = !result.name ? username : result.name;
+  const gitEmail = result.email;
+
     //console.log("Sorry no data retrieved!", error);
-    const avatar_url = !gitInfo ? "https://randomwordgenerator.com/picture.php" : gitInfo.avatar_url
-    const gituserUrl = gitInfo.html_url;
-    const gitName = !gitInfo.name ? username : gitInfo.name;
-    const gitEmail = gitInfo.email;
     let tableOfContents = data.tableOfContents;
     let projectTitle = data.projectTitle; //Todo parse string to remove spaces and replace with %20
     let projectDescription = data.description;
     let install = data.install;
     let usage = data.usage;
-    let collaborators = !data.contributors ? "None Currently" : data.contributors;
+    let collaborators = data.contributors;
+    if (!data.contributors){
+    let collaborators = "";
+    }
+    else{
+      creditTOC = tableOfContents + "* [Credit](#credit)  \n";
+      let credit = collaborators.split(", ");
+      credit.forEach(await function api(names){
+        credit = "![" + names.name +"](" + names.avatar_url + "&s=48) " + names.credit + "\n";
+      });
+    }
+    let mods = "";
+    let modulesTOC = "## Dependencies \n";
+    let modules = data.modules;
+    if(!modules){
+      modulesTOC = "";
+      mods = "";
+    }
+    else {
+      modArr = modules.split(", ");
+      modArr.forEach(function (modules, index){
+        mods = mods +  "* " + modArr[index] + "\n";
+      }
+      
+      ) 
+    }
     let license = data.license;
     let urprojectUrl = data.projectUrl;
     let questionsTOC = "* [Questions](#questions) \n";
     let questions = "## Questions \n";
-    let questionsLink = "![" + gitName +"](" + avatar_url + "&s=48)  [" + gitName + "](mailto:" + gitEmail + ") or  click on [@" + gitName + "]("+ gituserUrl+ ")";
+    let questionsLink = "![" + gitName +"](" + avatar_url + "&s=48)  Email: [" + gitName + "](mailto:" + gitEmail + ") or  click on [@" + gitName + "]("+ gituserUrl+ ")";
     //Community Contribution Guidelines
     let conCovenantBadge = `[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg?style=plastic)](code_of_conduct.md) `;
     let conCovenant = "## Contrubuting Guidelines \n This Repo proudly follows the [Contributor Covenant](https://www.contributor-covenant.org/) which is an industry standard. \n";
@@ -147,10 +174,7 @@ async function writeToFile (data, filename) {
       conCovenant = "";
       conCovTOC = "";
     }
-    // else{
-    //   conCovTOC = tableOfContents + "* [Contributing](#contributing)  \n";
-      
-    // }
+   
     //build Table of Contents
     if(!tableOfContents){
       tableOfContents = "";
@@ -158,33 +182,35 @@ async function writeToFile (data, filename) {
     else{
       tableOfContents = "* [Installation](#installation)  \n";
       tableOfContents = tableOfContents + "* [Usage](#usage)  \n";
-      tableOfContents = tableOfContents + "* [Credits](#credits)  \n";  
+      tableOfContents = tableOfContents + creditTOC;  
       tableOfContents = tableOfContents + "* [License](#license)  \n";
-      tableOfContents = tableOfContents + conCovTOC; 
-      tableOfContents = tableOfContents + questionsTOC;  
+      tableOfContents = tableOfContents + conCovTOC;
+      tableOfContents = tableOfContents +  modulesTOC;
+      tableOfContents = tableOfContents + questionsTOC; 
+
     }
     license = "[" +  license + "]" + "(https://github.com/"  + username + "/"+ projectTitle + "/blob/master/LICENSE)"; 
     switch (license) {
       case 'Apache 2.0' :
-        license = license + " -A permissive license whose main conditions require preservation of copyright and license notices. Contributors provide an express grant of patent rights. Licensed works, modifications, and larger works may be distributed under different terms and without source code.";
+        license = license + " -A permissive license whose main conditions require preservation of copyright and license notices. Contributors provide an express grant of patent rights. Licensed works, modifications, and larger works may be distributed under different terms and without source code.\n";
         break;
       case 'GNU AGPLv3' :
-        license = license + " -Permissions of this strongest copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. When a modified version is used to provide a service over a network, the complete source code of the modified version must be made available."; 
+        license = license + " -Permissions of this strongest copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. When a modified version is used to provide a service over a network, the complete source code of the modified version must be made available.\n"; 
         break;
       case 'GNU GPLv3' : 
-        license = license + " -Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights.";
+        license = license + " -Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights.\n";
         break;
       case 'GPLv3' : 
-        license = license + " -Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights.";
+        license = license + " -Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights.\n";
         break;
       case 'MIT' : 
-        license = license + " -A short and simple permissive license with conditions only requiring preservation of copyright and license notices. Licensed works, modifications, and larger works may be distributed under different terms and without source code. ";
+        license = license + " -A short and simple permissive license with conditions only requiring preservation of copyright and license notices. Licensed works, modifications, and larger works may be distributed under different terms and without source code.\n";
         break;
       case 'Mozilla Public License 2.0' : 
-        license = license + " -Permissions of this weak copyleft license are conditioned on making available source code of licensed files and modifications of those files under the same license (or in certain cases, one of the GNU licenses). Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. However, a larger work using the licensed work may be distributed under different terms and without source code for files added in the larger work.";
+        license = license + " -Permissions of this weak copyleft license are conditioned on making available source code of licensed files and modifications of those files under the same license (or in certain cases, one of the GNU licenses). Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. However, a larger work using the licensed work may be distributed under different terms and without source code for files added in the larger work.\n";
         break;
       default :  //'The Unlicense' 
-        license = license + " -A license with no conditions whatsoever which dedicates works to the public domain. Unlicensed works, modifications, and larger works may be distributed under different terms and without source code.";
+        license = license + " -A license with no conditions whatsoever which dedicates works to the public domain. Unlicensed works, modifications, and larger works may be distributed under different terms and without source code.\n";
     }
     
     const test = data.tests;
@@ -213,6 +239,7 @@ async function writeToFile (data, filename) {
     header = header + "## License  \n";
     header = header + license + "  \n";
     header = header + conCovenant + " \n";
+    header = header + "## Dependencies  \n" + mods;
     header = header + questions + questionsLink;
 
     
@@ -258,8 +285,13 @@ async function writeToFile (data, filename) {
         return console.log(err);
       }
       else {
+        const success = (filepath) => {
+          console.log(
+            chalk.white.bgGreen.bold(`Done! File created at ${filepath}`)
+          );
+        };
         console.log(
-          chalk.blueBright(
+          chalk.magentaBright(
             figlet.textSync( projectTitle, {
               font: "Doom",
               horizontalLayout: "default",
@@ -285,7 +317,7 @@ function init() {
 }
 console.clear();
 console.log(
-  chalk.redBright(
+  chalk.bgRed(
     figlet.textSync("ReadMe Generator", {
       font: "Doom",
       horizontalLayout: "default",
