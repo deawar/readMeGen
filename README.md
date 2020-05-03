@@ -4,8 +4,10 @@
 
 ![animatedGif](https://github.com/deawar/readMeGen/blob/master/ReadMeGen.gif)
 ## Description  
-  To easily create a beautiful Readme.md easily and quickly. \n When I have a new project \n Then I want to create a full featured Readme.md file.   
-  To create a beautiful ReadME.md quickly and easily. When I start a new project, Then I want to quickly and easily create a ReadME.md file.  
+  To easily create a beautiful Readme.md easily and quickly. 
+  When I have a new project,
+  Then I want to create a full featured Readme.md file.   
+    
 * [Installation](#installation)  
 * [Usage](#usage)  
 * [Credit](#credit)  
