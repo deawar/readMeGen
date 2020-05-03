@@ -6,7 +6,6 @@
 
 */
 const api = require("./utils/api.js");
-
 const axios = require('axios');
 require('dotenv').config();
 const figlet = require("figlet");
@@ -19,7 +18,9 @@ const fs = require('fs');
 console.log(process.env.SECRET_MESSAGE);
 const TOKEN = process.env.TOKEN;
 let credit ="";
-let result
+let result;
+let foundCollab = [];
+
 
 const questions = [
   {
@@ -77,7 +78,30 @@ const questions = [
   {
     type: "input",
     message: "Would you like to add Contrubutors or Tutorials?\nThese names will show up under the 'Credit' heading.\n(Enter their GitHub usernames separated by commas',')",
-    name: "contributors"
+    name: "contributors",
+    validate:  function(input){
+      const inputArr = input.split(", ");  
+      const notFound = []
+      const found = []
+      inputArr.forEach(async function(el) {
+        const gitInfo = await api(input)
+        console.log("Line 88 gitInfo: ",gitInfo);
+        if(gitInfo === null){
+
+          notFound.push(el)
+        }else {
+          found.push(el) 
+          return true
+        }
+      })
+      
+      if(notFound.length === 0){
+        foundCollab = [...found]
+        return true
+      }else{
+        return `${JSON.stringify(notFound)} are not valid github userName/userName's`
+      }
+    }
   },
   {
     type: "input",
@@ -126,13 +150,11 @@ const getUserInput = async () => {
   }
 };
 
-  
+//Function to WriteToFile  
 async function writeToFile (data, filename) {
-  
   const {username, projectUrl, conCov} = data
   //const gitInfo = await getUsername(username); <--was working 
   // const gitInfo = async () => {
-
   // };
   console.log("Line 136 result: ",result);
   // const result = await api(username);
@@ -156,10 +178,11 @@ async function writeToFile (data, filename) {
       const collabArr = collaborators.split(", ");
       collabArr.forEach(function (collaborators){
         let name = collaborators;
-        console.log("Credit: ",name);
+        console.log("Line 181 result: ",result);
+        console.log("Line 182 Credit: ",name);
         //names = await api(username);
-        //credit = "![" + names.name +"](" + names.avatar_url + "&s=48) " + names.credit + "\n";
-        credit = `${credit}*  ${collaborators}  \n`;
+        credit = "![" + gitInfo.name +"](" + gitInfo.avatar_url + "&s=48) " + gitInfo.credit + "\n";
+        //credit = `${credit}*  ${collaborators}  \n`;
       })
       // credit.forEach(await function api(names){
       //   credit = "![" + names.name +"](" + names.avatar_url + "&s=48) " + names.credit + "\n";
@@ -177,9 +200,7 @@ async function writeToFile (data, filename) {
       modArr = modules.split(", ");
       modArr.forEach(function (modules, index){
         mods = mods +  "* " + modArr[index] + "\n";
-      }
-      
-      ) 
+      }) 
     }
     let license = data.license;
     let urprojectUrl = data.projectUrl;
@@ -208,7 +229,6 @@ async function writeToFile (data, filename) {
       tableOfContents = tableOfContents + conCovTOC;
       tableOfContents = tableOfContents +  modulesTOC;
       tableOfContents = tableOfContents + questionsTOC; 
-
     }
     license = "[" +  license + "]" + "(https://github.com/"  + username + "/"+ projectTitle + "/blob/master/LICENSE)"; 
     switch (license) {
@@ -233,10 +253,7 @@ async function writeToFile (data, filename) {
       default :  //'The Unlicense' 
         license = license + " -A license with no conditions whatsoever which dedicates works to the public domain. Unlicensed works, modifications, and larger works may be distributed under different terms and without source code.\n";
     }
-    
     const test = data.tests;
-
-
     console.log("avatar url:",avatar_url);
     console.log("data: ",data);
     console.log ('Project Title :', projectTitle);
@@ -263,44 +280,12 @@ async function writeToFile (data, filename) {
     header = header + conCovenant + " \n";
     header = header + "## Dependencies  \n" + mods;
     header = header + questions + questionsLink;
-
-    
-    
     
       // [![GitHub forks](https://img.shields.io/github/forks/${username}/${projectTitle}?style=plastic)]({$projectUrl}/network)
       
     //![node-current](https://img.shields.io/node/v/inquirer?style=plastic)
 
-    //'[![GitHub issues](https://img.shields.io/github/issues/'itsjonkelley/RainChk?style=plastic)](https://github.com/itsjonkelley/RainChk/issues)
-      // 
-      // ##${projectDescription}
-
-      // ## Table of Contents
-      
-      // * [Installation](#installation)
-      // * [Usage](#usage)
-      // * [Credits](#credits)
-      // * [License](#license)
-      
-      // ## Installation
-      // ${install}
-
-      // ## Usage 
-       
-      // ${usage}
-      
-
-      // ## Credits
-
-      // ${collaborators}
-
-      // ## License
-
-      // ${license}
-
-      // ## Tests
-     
-      // ${test}
+   
      
     fs.writeFile(filename, header, function (err) {
       if (err) {
