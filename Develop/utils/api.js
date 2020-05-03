@@ -20,7 +20,7 @@ const api = async (username) => {
       }
     })
     
-    console.log("Line 23 Response Data: ",response.data)
+    //console.log("Line 23 Response Data: ",response.data)
     const {html_url, login, avatar_url, repos_url, email, name, bio} = response.data;
       const gitInfo = {
         "html_url": html_url,
@@ -34,9 +34,9 @@ const api = async (username) => {
       return gitInfo
     }     
     catch(err){
-    console.log(err)
+    // console.log(err)
     if (err.response.status === 404) {
-      console.log("Line 39 in api.js error block");
+      //console.log("Line 39 in api.js error block");
       return null;
     }
    }

@@ -18,12 +18,25 @@ const fs = require('fs');
 //const open = require('open');
 console.log(process.env.SECRET_MESSAGE);
 const TOKEN = process.env.TOKEN;
+let credit ="";
+let result
 
 const questions = [
   {
     type: "input",
     message: "Please enter your GitHub username: ",
-    name: "username"
+    name: "username",
+    validate: async function(input){
+      
+      const gitInfo = await api(input)
+      if(gitInfo === null){
+        return 'You need to provide a valid GitHub UserName.' ;
+      }else {
+        result = gitInfo
+        return true
+      }
+    
+    }
   },
   {
     type: "input",
@@ -121,8 +134,8 @@ async function writeToFile (data, filename) {
   // const gitInfo = async () => {
 
   // };
-  //console.log("Line 125 gitinfo: ",gitInfo())
-  const result = await api(username);
+  console.log("Line 136 result: ",result);
+  // const result = await api(username);
   const avatar_url = !result ? "https://randomwordgenerator.com/picture.php" : result.avatar_url
   const gituserUrl = result.html_url;
   const gitName = !result.name ? username : result.name;
@@ -140,13 +153,13 @@ async function writeToFile (data, filename) {
     }
     else{
       creditTOC = "* [Credit](#credit)  \n";
-      let credit = collaborators.split(", ");
-      credit.forEach(function (collaborators, index){
-        let name = collaborators[index];
+      const collabArr = collaborators.split(", ");
+      collabArr.forEach(function (collaborators){
+        let name = collaborators;
         console.log("Credit: ",name);
         //names = await api(username);
         //credit = "![" + names.name +"](" + names.avatar_url + "&s=48) " + names.credit + "\n";
-        credit = credit + "* " + collaborators[index] + "\n";
+        credit = `${credit}*  ${collaborators}  \n`;
       })
       // credit.forEach(await function api(names){
       //   credit = "![" + names.name +"](" + names.avatar_url + "&s=48) " + names.credit + "\n";
@@ -243,8 +256,8 @@ async function writeToFile (data, filename) {
     header = header + "## Usage  \n";
     header = header + "\`\`\` \n" + usage + " \n" + "\`\`\` \n";
     header = header + "## Credit  \n";
-    //header = header + credit + "  \n";
-    header = header +  collaborators + " \n ";
+    header = header + credit + "  \n";
+    //header = header +  collaborators + " \n ";
     header = header + "## License  \n";
     header = header + license + "  \n";
     header = header + conCovenant + " \n";
