@@ -1,8 +1,13 @@
-# ReadmeGenIII 
+# ReadmeGen
  ## Badges  
-[![GitHub issues](https://img.shields.io/github/issues/deawar/ReadmeGenIII?style=plastic)](undefined/network)[![GitHub forks](https://img.shields.io/github/forks/deawar/ReadmeGenIII?style=plastic)](undefined/network)[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg?style=plastic)](code_of_conduct.md) 
+[![GitHub issues](https://img.shields.io/github/issues/deawar/ReadMeGen?style=plastic)](undefined/network)[![GitHub forks](https://img.shields.io/github/forks/deawar/ReadMeGen?style=plastic)](undefined/network)[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg?style=plastic)](code_of_conduct.md) 
+
+![animatedGif](https://github.com/deawar/readMeGen/blob/master/ReadMeGen.gif)
 ## Description  
-  To be Written...  
+  To easily create a beautiful Readme.md easily and quickly. 
+  When I have a new project,
+  Then I want to create a full featured Readme.md file.   
+    
 * [Installation](#installation)  
 * [Usage](#usage)  
 * [Credit](#credit)  
