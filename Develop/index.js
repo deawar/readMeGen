@@ -79,18 +79,21 @@ const questions = [
     type: "input",
     message: "Would you like to add Contrubutors or Tutorials?\nThese names will show up under the 'Credit' heading.\n(Enter their GitHub usernames separated by commas',')",
     name: "contributors",
-    validate:  function(input){
+    validate:  async function(input){
+      console.log(input)
       const inputArr = input.split(", ");  
       const notFound = []
       const found = []
+      console.log("line 86: ",inputArr)
       inputArr.forEach(async function(el) {
-        const gitInfo = await api(input)
-        console.log("Line 88 gitInfo: ",gitInfo);
+        const gitInfo = await api(el)
+        console.log("Line 90 gitInfo:", gitInfo);
+        console.log("Line 88 gitInfo: ",el);
         if(gitInfo === null){
 
           notFound.push(el)
         }else {
-          found.push(el) 
+          found.push(gitInfo) 
           return true
         }
       })
@@ -176,12 +179,12 @@ async function writeToFile (data, filename) {
     else{
       creditTOC = "* [Credit](#credit)  \n";
       const collabArr = collaborators.split(", ");
-      collabArr.forEach(function (collaborators){
-        let name = collaborators;
+      foundCollab.forEach(function (name){
+       
         console.log("Line 181 result: ",result);
         console.log("Line 182 Credit: ",name);
         //names = await api(username);
-        credit = "![" + gitInfo.name +"](" + gitInfo.avatar_url + "&s=48) " + gitInfo.credit + "\n";
+        credit = "* ![" + name.name +"](" + name.avatar_url + "&s=48) " + name.credit + "\n  ";
         //credit = `${credit}*  ${collaborators}  \n`;
       })
       // credit.forEach(await function api(names){
