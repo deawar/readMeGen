@@ -10,16 +10,18 @@ const axios = require('axios');
 require('dotenv').config();
 const figlet = require("figlet");
 const chalk = require("chalk");
-//const electron = require('electron');
-//const electronHtmlTo = require('electron-html-to');
+const path = require('path');
 const inquirer = require('inquirer');
 const fs = require('fs');
-//const open = require('open');
+const OUTPUT_DIR = path.resolve(__dirname, "output");
+let projectTitle = "";
+const outputPath = path.join(OUTPUT_DIR, projectTitle + ".md");
 console.log(process.env.SECRET_MESSAGE);
 const TOKEN = process.env.TOKEN;
 let credit ="";
 let result;
 let foundCollab = [];
+let creditTOC = "";
 
 
 const questions = [
@@ -87,8 +89,8 @@ const questions = [
       console.log("line 86: ",inputArr)
       inputArr.forEach(async function(el) {
         const gitInfo = await api(el)
-        console.log("Line 90 gitInfo:", gitInfo);
-        console.log("Line 88 gitInfo: ",el);
+        //console.log("Line 90 gitInfo:", gitInfo);
+        //console.log("Line 88 gitInfo: ",el);
         if(gitInfo === null){
 
           notFound.push(el)
@@ -146,19 +148,17 @@ const getUserInput = async () => {
         }
       }
     }
-    writeToFile(input, "readME.md")
+    writeToFile(input, outputPath)
   } 
   catch (error){
     console.log("In getUserInput catch error: ",error);
   }
 };
 
-//Function to WriteToFile  
-async function writeToFile (data, filename) {
+//Function to WriteToFile    //replacing filename with outputPath
+async function writeToFile (data, outputPath) {
   const {username, projectUrl, conCov} = data
-  //const gitInfo = await getUsername(username); <--was working 
-  // const gitInfo = async () => {
-  // };
+  
   console.log("Line 136 result: ",result);
   // const result = await api(username);
   const avatar_url = !result ? "https://randomwordgenerator.com/picture.php" : result.avatar_url
@@ -174,7 +174,8 @@ async function writeToFile (data, filename) {
     let usage = data.usage;
     let collaborators = data.contributors;
     if (!data.contributors){
-    let collaborators = "";
+      let collaborators = "";
+      let creditTOC = "";
     }
     else{
       creditTOC = "* [Credit](#credit)  \n";
@@ -214,6 +215,9 @@ async function writeToFile (data, filename) {
     let conCovenantBadge = `[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg?style=plastic)](code_of_conduct.md) `;
     let conCovenant = "## Contrubuting Guidelines \n This Repo proudly follows the [Contributor Covenant](https://www.contributor-covenant.org/) which is an industry standard. \n";
     let conCovTOC = "* [Contributing](#contributing)  \n";
+    if (!creditTOC){
+      let creditTOC = "";
+    }
     if(!conCov){
       conCovenantBadge = "";
       conCovenant = "";
@@ -289,7 +293,7 @@ async function writeToFile (data, filename) {
     //![node-current](https://img.shields.io/node/v/inquirer?style=plastic)
 
    
-     
+    let filename = projectTitle + ".md";     
     fs.writeFile(filename, header, function (err) {
       if (err) {
         return console.log(err);
