@@ -12,7 +12,7 @@
     "axios": "^0.19.2",
     "chalk": "^4.0.0",
     "dotenv": "^8.2.0",
-    "electron": "^5.0.3",
+    "electron": "^9.1.0",
     "electron-html-to": "^2.6.0",
     "figlet": "^1.4.0",
     "inquirer": "^6.5.2",
