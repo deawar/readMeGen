@@ -23,14 +23,13 @@ let result;
 let foundCollab = [];
 let creditTOC = "";
 
-
 const questions = [
   {
     type: "input",
     message: "Please enter your GitHub username: ",
     name: "username",
     validate: async function(input){
-      
+      console.log('in index.js:', {TOKEN})
       const gitInfo = await api(input)
       if(gitInfo === null){
         return 'You need to provide a valid GitHub UserName.' ;
@@ -89,8 +88,8 @@ const questions = [
       console.log("line 86: ",inputArr)
       inputArr.forEach(async function(el) {
         const gitInfo = await api(el)
-        //console.log("Line 90 gitInfo:", gitInfo);
-        //console.log("Line 88 gitInfo: ",el);
+        console.log("Line 91 gitInfo:", gitInfo);
+        //console.log("Line 92 gitInfo: ",el);
         if(gitInfo === null){
 
           notFound.push(el)
@@ -127,12 +126,12 @@ const questions = [
 
 ];
 
-const retryUserName = [
-  {
-    type: "input",
-    message: "Please enter your GitHub username: ",
-    name: "username"
-  }];
+// const retryUserName = [
+//   {
+//     type: "input",
+//     message: "Please enter your GitHub username: ",
+//     name: "username"
+//   }];
 
 const getUserInput = async () => {
   try {
@@ -159,7 +158,7 @@ const getUserInput = async () => {
 async function writeToFile (data, outputPath) {
   const {username, projectUrl, conCov} = data
   
-  console.log("Line 136 result: ",result);
+  console.log("Line 136 result: ",{result});
   // const result = await api(username);
   const avatar_url = !result ? "https://randomwordgenerator.com/picture.php" : result.avatar_url
   const gituserUrl = result.html_url;
@@ -263,6 +262,7 @@ async function writeToFile (data, outputPath) {
     const test = data.tests;
     console.log("avatar url:",avatar_url);
     console.log("data: ",data);
+    console.log('test: ,',test);
     console.log ('Project Title :', projectTitle);
     
     //build the file
@@ -278,7 +278,7 @@ async function writeToFile (data, outputPath) {
     header = header + "## Installation  \n";
     header = header + "\`\`\` \n" + install + " \n" + "\`\`\` \n";
     header = header + "## Usage  \n";
-    header = header + "\`\`\` \n" + usage + " \n" + "\`\`\` \n";
+    header = header + "\`\`\` \n node" + usage + " \n" + "\`\`\` \n";
     header = header + "## Credit  \n";
     header = header + credit + "  \n";
     //header = header +  collaborators + " \n ";
