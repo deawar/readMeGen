@@ -4,7 +4,7 @@
   "description": "Node Application to autogenerate a readme.md",
   "main": "index.js",
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.2",
     "dotenv": "^8.2.0",
     "electron": "^13.6.6",
     "electron-html-to": "^2.6.0",
