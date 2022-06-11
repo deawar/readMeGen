@@ -1,6 +1,6 @@
 # ReadMeAgain 
  ## Badges  
-[![GitHub issues](https://img.shields.io/github/issues/deawar/ReadMeAgain?style=plastic)](undefined/network)[![GitHub forks](https://img.shields.io/github/forks/deawar/ReadMeAgain?style=plastic)](undefined/network)[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg?style=plastic)](code_of_conduct.md) 
+[![GitHub issues](https://img.shields.io/github/issues/deawar/ReadMeGen?style=plastic)](undefined/network)[![GitHub forks](https://img.shields.io/github/forks/deawar/ReadMeGen?style=plastic)](undefined/network)[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg?style=plastic)](code_of_conduct.md) 
 ## Description  
   To be Written...  
 * [Installation](#installation)  
