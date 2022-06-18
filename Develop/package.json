@@ -8,11 +8,11 @@
     "dotenv": "^8.2.0",
     "electron": "^13.6.6",
     "electron-html-to": "^2.6.0",
+    "figlet": "^1.5.2",
     "inquirer": "^7.1.0",
     "open": "^7.0.3",
     "standard": "^14.3.3"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "standard && node index.js"
   },
