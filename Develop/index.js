@@ -5,17 +5,23 @@
 -Populate Readme.medium
 
 */
-const api = require("./utils/api.js");
-const axios = require('axios');
-require('dotenv').config();
-const figlet = require("figlet");
-const chalk = require("chalk");
-const path = require('path');
-const inquirer = require('inquirer');
-const fs = require('fs');
-const OUTPUT_DIR = path.resolve(__dirname, "output");
+import api from "./utils/api.js";
+import axios from 'axios';
+import 'dotenv/config';
+import path from 'path';
+import {fileURLToPath} from 'url';
+import figlet from "figlet";
+import chalk from "chalk";
+//import { white, magentaBright, blueBright, bgRed } from "chalk";
+import { resolve, join } from 'path';
+import inquirer from 'inquirer';
+//import { prompt } from 'inquirer';
+import { writeFile } from 'fs';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const OUTPUT_DIR = resolve(__dirname, "output");
 let projectTitle = "";
-const outputPath = path.join(OUTPUT_DIR, projectTitle + ".md");
+const outputPath = join(OUTPUT_DIR, projectTitle + ".md");
 console.log(process.env.SECRET_MESSAGE);
 const TOKEN = process.env.TOKEN;
 let credit ="";
@@ -294,7 +300,7 @@ async function writeToFile (data, outputPath) {
 
    
     let filename = projectTitle + ".md";     
-    fs.writeFile(filename, header, function (err) {
+    writeFile(filename, header, function (err) {
       if (err) {
         return console.log(err);
       }

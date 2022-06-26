@@ -1,9 +1,9 @@
-const axios = require('axios');
-require('dotenv').config();
-const figlet = require("figlet");
-const chalk = require("chalk");
-const inquirer = require('inquirer');
-const fs = require('fs');
+import axios from 'axios';
+import 'dotenv/config';
+import figlet from "figlet";
+import chalk from "chalk";
+import inquirer from 'inquirer';
+import fs from 'fs';
 console.log(process.env.SECRET_MESSAGE);
 const TOKEN = process.env.TOKEN;
 
@@ -42,4 +42,4 @@ const api = async (username) => {
       }
     }
 };
-module.exports = api;
+export default api;
