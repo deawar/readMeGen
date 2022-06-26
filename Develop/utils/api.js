@@ -11,7 +11,8 @@ console.log("Found api.js",{TOKEN});
 const api = async (username) => {
   try{
     // const gitInfo = await getUser (username);
-    console.log({TOKEN});
+    console.log("secret message check: ",process.env.SECRET_MESSAGE);
+    console.log("the Token variable: ",{TOKEN});
     const gitUrl = `https://api.github.com/users/${username}`; //${TOKEN}
     const response = await axios({
       method: "get",
@@ -32,6 +33,7 @@ const api = async (username) => {
         "name" : name,
         "bio": bio
       };
+      console.log("Line 35 gitInfo: ",gitInfo)
       return gitInfo
     }     
     catch(err){
