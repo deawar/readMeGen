@@ -8,11 +8,12 @@
     "axios": "^0.27.2",
     "chalk": "^5.0.1",
     "dotenv": "^16.0.1",
-    "electron": "^15.5.5",
-    "electron-html-to": "^2.6.0",
+    "electron": "^15.5.7",
+    "electron-html-to": "^2.6.1",
+    "figlet": "^1.5.2",
     "inquirer": "^9.0.0",
     "open": "^8.4.0",
-    "standard": "^14.3.3"
+    "standard": "^14.3.4"
   },
   "scripts": {
     "test": "standard && node index.js"

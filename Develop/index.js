@@ -199,6 +199,7 @@ async function writeToFile (data, outputPath) {
       // });
     }
     let mods = "";
+    let modArr = [];
     let modulesTOC = "* [Dependencies](#dependencies)  \n";
     let modules = data.modules;
     if(!modules){
@@ -236,6 +237,7 @@ async function writeToFile (data, outputPath) {
     else{
       tableOfContents = "* [Installation](#installation)  \n";
       tableOfContents = tableOfContents + "* [Usage](#usage)  \n";
+      tableOfContents = tableOfContents + "* [Testing](#testing)  \n";
       tableOfContents = tableOfContents + creditTOC;  
       tableOfContents = tableOfContents + "* [License](#license)  \n";
       tableOfContents = tableOfContents + conCovTOC;
@@ -284,7 +286,9 @@ async function writeToFile (data, outputPath) {
     header = header + "## Installation  \n";
     header = header + "\`\`\` \n" + install + " \n" + "\`\`\` \n";
     header = header + "## Usage  \n";
-    header = header + "\`\`\` \n node" + usage + " \n" + "\`\`\` \n";
+    header = header + "\`\`\` \n" + usage + " \n" + "\`\`\` \n";
+    header = header + "## Testing  \n";
+    header = header + "\`\`\` \n" + test + " \n" + "\`\`\` \n";
     header = header + "## Credit  \n";
     header = header + credit + "  \n";
     //header = header +  collaborators + " \n ";
