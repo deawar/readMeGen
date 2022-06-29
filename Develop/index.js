@@ -7,7 +7,8 @@
 */
 import api from "./utils/api.js";
 import axios from 'axios';
-import 'dotenv/config';
+import dotenv from 'dotenv';
+dotenv.config();
 import path from 'path';
 import {fileURLToPath} from 'url';
 import figlet from "figlet";
@@ -22,7 +23,7 @@ const __dirname = path.dirname(__filename);
 const OUTPUT_DIR = resolve(__dirname, "output");
 let projectTitle = "";
 const outputPath = join(OUTPUT_DIR, projectTitle + ".md");
-console.log(process.env.SECRET_MESSAGE);
+console.log("in index.js SECRET_MESSAGE: ",process.env.SECRET_MESSAGE);
 const TOKEN = process.env.TOKEN;
 let credit ="";
 let result;
@@ -87,7 +88,7 @@ const questions = [
     message: "Would you like to add Contrubutors or Tutorials?\nThese names will show up under the 'Credit' heading.\n(Enter their GitHub usernames separated by commas',')",
     name: "contributors",
     validate:  async function(input){
-      console.log(input)
+      console.log("What was entered: ",input)
       const inputArr = input.split(", ");  
       const notFound = []
       const found = []
@@ -178,7 +179,7 @@ async function writeToFile (data, outputPath) {
     let install = data.install;
     let usage = data.usage;
     let collaborators = data.contributors;
-    if (!data.contributors){
+    if (!collaborators){
       let collaborators = "";
       let creditTOC = "";
     }
@@ -187,8 +188,8 @@ async function writeToFile (data, outputPath) {
       const collabArr = collaborators.split(", ");
       foundCollab.forEach(function (name){
        
-        console.log("Line 181 result: ",result);
-        console.log("Line 182 Credit: ",name);
+        console.log("Line 191 result: ",result);
+        console.log("Line 192 Credit: ",name);
         //names = await api(username);
         credit = "* ![" + name.name +"](" + name.avatar_url + "&s=48) " + name.credit + "\n  ";
         //credit = `${credit}*  ${collaborators}  \n`;
@@ -270,7 +271,8 @@ async function writeToFile (data, outputPath) {
     const test = data.tests;
     console.log("avatar url:",avatar_url);
     console.log("data: ",data);
-    console.log('test: ,',test);
+    console.log('test: ',test);
+    console.log('credit: ', data.contributors);
     console.log ('Project Title :', projectTitle);
     
     //build the file
@@ -290,7 +292,7 @@ async function writeToFile (data, outputPath) {
     header = header + "## Testing  \n";
     header = header + "\`\`\` \n" + test + " \n" + "\`\`\` \n";
     header = header + "## Credit  \n";
-    header = header + credit + "  \n";
+    header = header + collaborators + "  \n";
     //header = header +  collaborators + " \n ";
     header = header + "## License  \n";
     header = header + license + "  \n";
