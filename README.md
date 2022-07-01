@@ -2,7 +2,7 @@
  ## Badges  
 [![GitHub issues](https://img.shields.io/github/issues/deawar/ReadMeGen?style=plastic)](undefined/network)[![GitHub forks](https://img.shields.io/github/forks/deawar/ReadMeGen?style=plastic)](undefined/network)[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg?style=plastic)](code_of_conduct.md) 
 ## Description  
-  To be Written...  
+  As a developer I wanted an easier way to create a readme.md file for my projects. This can be run from CLI and eventually as an electron app.
 * [Installation](#installation)  
 * [Usage](#usage)
 * [Testing](#testing)  
