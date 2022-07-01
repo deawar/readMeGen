@@ -253,6 +253,7 @@ async function writeToFile (data, outputPath) {
     tableOfContents = tableOfContents + '* [License](#license)  \n'
     tableOfContents = tableOfContents + conCovTOC
     tableOfContents = tableOfContents + modulesTOC
+    tableOfContents = tableOfContents + devModulesTOC
     tableOfContents = tableOfContents + questionsTOC
   }
   license = '[' + license + ']' + '(https://github.com/' + username + '/' + projectTitle + '/blob/master/LICENSE)'
