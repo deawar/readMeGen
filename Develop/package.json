@@ -10,8 +10,7 @@
     "dotenv": "^16.0.1",
     "figlet": "^1.5.2",
     "inquirer": "^9.0.0",
-    "open": "^8.4.0",
-    "standard": "^14.3.4"
+    "open": "^8.4.0"
   },
   "scripts": {
     "test": "standard && node index.js"
@@ -28,5 +27,8 @@
   "bugs": {
     "url": "https://github.com/deawar/readMeGen/issues"
   },
-  "homepage": "https://github.com/deawar/readMeGen#readme"
+  "homepage": "https://github.com/deawar/readMeGen#readme",
+  "devDependencies": {
+    "standard": "^17.0.0"
+  }
 }
