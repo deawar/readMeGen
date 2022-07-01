@@ -195,6 +195,7 @@ async function writeToFile (data, outputPath) {
     //   console.log("Line 146 credit: ",credit);
     // });
   }
+  let modulesTOC = ''
   let mods = ''
   let modArr = []
   const modules = data.modules
@@ -209,7 +210,7 @@ async function writeToFile (data, outputPath) {
       mods = mods + '* [' + modArr[index] + '](https://www.npmjs.com/package/' + modArr[index] + ')  \n'
     })
   }
-  let devModuesTOC = '* [Dev-Dependencies](#dev-dependencies)  \n'
+  let devModulesTOC = '* [Dev-Dependencies](#dev-dependencies)  \n'
   let devModArr = []
   let devMods = ''
   const devModules = data.devModules
