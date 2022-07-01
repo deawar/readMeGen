@@ -1,14 +1,15 @@
-# ReadMeAgain 
+# ReadMeGen
  ## Badges  
 [![GitHub issues](https://img.shields.io/github/issues/deawar/ReadMeGen?style=plastic)](undefined/network)[![GitHub forks](https://img.shields.io/github/forks/deawar/ReadMeGen?style=plastic)](undefined/network)[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg?style=plastic)](code_of_conduct.md) 
 ## Description  
   To be Written...  
 * [Installation](#installation)  
-* [Usage](#usage)  
-* [Credit](#credit)  
+* [Usage](#usage)
+* [Testing](#testing)  
 * [License](#license)  
 * [Contributing](#contributing)  
-* [Dependencies](#dependencies)  
+* [Dependencies](#dependencies)
+* [Dev Dependeies](#dev-dependencies)  
 * [Questions](#questions) 
   
 ## Installation  
@@ -19,8 +20,10 @@ npm install
 ``` 
 node index.js 
 ``` 
-## Credit  
-  
+## Testing
+```
+npm test
+```  
 ## License  
 [MIT](https://github.com/deawar/ReadMeAgain/blob/master/LICENSE) -A license with no conditions whatsoever which dedicates works to the public domain. Unlicensed works, modifications, and larger works may be distributed under different terms and without source code.
   
@@ -35,7 +38,7 @@ node index.js
 *  ["inquirer": "^9.0.0"](https://www.npmjs.com/package/inquirer)
 *  ["open": "^8.4.0"](https://www.npmjs.com/package/open)
 
-## Dev Dependencies
+## Dev-Dependencies
 *  ["standard": "^17.0.0"](https://www.npmjs.com/package/standard)
 
 ## Questions 
