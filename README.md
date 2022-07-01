@@ -28,12 +28,15 @@ node index.js
  This Repo proudly follows the [Contributor Covenant](https://www.contributor-covenant.org/) which is an industry standard. 
  
 ## Dependencies  
-*  ["axios": "^0.27.2"](https://www.npmjs.com/package/axios),
-*  ["chalk": "^5.0.1"](https://www.npmjs.com/package/chalk),
-*  ["dotenv": "^16.0.1"](https://www.npmjs.com/package/dotenv),
-*  ["figlet": "^1.5.2"](https://www.npmjs.com/package/figlet),
-*  ["inquirer": "^9.0.0"](https://www.npmjs.com/package/inquirer),
-*  ["open": "^8.4.0"](https://www.npmjs.com/package/open),
-*  ["standard": "^14.3.4"](https://www.npmjs.com/package/standard)
+*  ["axios": "^0.27.2"](https://www.npmjs.com/package/axios)
+*  ["chalk": "^5.0.1"](https://www.npmjs.com/package/chalk)
+*  ["dotenv": "^16.0.1"](https://www.npmjs.com/package/dotenv)
+*  ["figlet": "^1.5.2"](https://www.npmjs.com/package/figlet)
+*  ["inquirer": "^9.0.0"](https://www.npmjs.com/package/inquirer)
+*  ["open": "^8.4.0"](https://www.npmjs.com/package/open)
+
+## Dev Dependencies
+*  ["standard": "^17.0.0"](https://www.npmjs.com/package/standard)
+
 ## Questions 
 ![Dean Warren](https://avatars3.githubusercontent.com/u/15312495?v=4&s=48)  Email: [Dean Warren](mailto:deawar@gmail.com) or  click on [@Dean Warren](https://github.com/deawar)
