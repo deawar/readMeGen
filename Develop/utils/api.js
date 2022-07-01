@@ -1,10 +1,5 @@
 import axios from 'axios'
 import * as dotenv from 'dotenv'
-// import 'dotenv/config';
-import figlet from 'figlet'
-import chalk from 'chalk'
-import inquirer from 'inquirer'
-import fs from 'fs'
 dotenv.config()
 const THIRD_ITEM = process.env.THIRD_ITEM
 const TOKEN = process.env.TOKEN

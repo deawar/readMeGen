@@ -6,16 +6,13 @@
 
 */
 import api from './utils/api.js'
-import axios from 'axios'
 import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import figlet from 'figlet'
 import chalk from 'chalk'
-// import { white, magentaBright, blueBright, bgRed } from "chalk";
 import { resolve, join } from 'path'
 import inquirer from 'inquirer'
-// import { prompt } from 'inquirer';
 import { writeFile } from 'fs'
 dotenv.config()
 const __filename = fileURLToPath(import.meta.url)
@@ -119,6 +116,11 @@ const questions = [
   },
   {
     type: 'input',
+    message: 'Would you like to add additional Dev Dependencie Modules requirements?\n(Enter their npmjs names separated by commas)',
+    name: 'devModules'
+  },  
+  {
+    type: 'input',
     message: "How do you run Tests?\n Default is 'npm test'.",
     name: 'tests',
     default: 'npm test'
@@ -195,15 +197,30 @@ async function writeToFile (data, outputPath) {
   }
   let mods = ''
   let modArr = []
-  let modulesTOC = '* [Dependencies](#dependencies)  \n'
   const modules = data.modules
   if (!modules) {
     modulesTOC = ''
     mods = ''
   } else {
+    let modulesTOC = '* [Dependencies](#dependencies)  \n'
     modArr = modules.split(', ')
     modArr.forEach(function (modules, index) {
-      mods = mods + '* ' + modArr[index] + '\n'
+      //mods = mods + '* ' + modArr[index] + '\n'
+      mods = mods + '* [' + modArr[index] + '](https://www.npmjs.com/package/' + modArr[index] + ')  \n'
+    })
+  }
+  let devModuesTOC = '* [Dev-Dependencies](#dev-dependencies)  \n'
+  let devModArr = []
+  let devMods = ''
+  const devModules = data.devModules
+  if (!devModules) {
+    devModulesTOC = ''
+    devMods = ''
+  } else {
+    let devModulesTOC = '* [Dev-Dependencies](#dev-dependencies)  \n'
+    devModArr = devModules.split(', ')
+    devModArr.forEach(function (devModules, index) {
+      devMods = devMods + '* [' + devModArr[index] + '](https://www.npmjs.com/package/' + devModArr[index] + ')  \n'
     })
   }
   let license = data.license
