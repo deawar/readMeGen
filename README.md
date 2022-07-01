@@ -28,7 +28,12 @@ node index.js
  This Repo proudly follows the [Contributor Covenant](https://www.contributor-covenant.org/) which is an industry standard. 
  
 ## Dependencies  
-* axios
-* inquirer
+*  "axios": "^0.27.2",
+*  "chalk": "^5.0.1",
+*  "dotenv": "^16.0.1",
+*  "figlet": "^1.5.2",
+*  "inquirer": "^9.0.0",
+*  "open": "^8.4.0",
+*  "standard": "^14.3.4"
 ## Questions 
 ![Dean Warren](https://avatars3.githubusercontent.com/u/15312495?v=4&s=48)  Email: [Dean Warren](mailto:deawar@gmail.com) or  click on [@Dean Warren](https://github.com/deawar)
