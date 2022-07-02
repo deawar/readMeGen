@@ -118,7 +118,7 @@ const questions = [
     type: 'input',
     message: 'Would you like to add additional Dev Dependencie Modules requirements?\n(Enter their npmjs names separated by commas)',
     name: 'devModules'
-  },  
+  },
   {
     type: 'input',
     message: "How do you run Tests?\n Default is 'npm test'.",
@@ -177,7 +177,7 @@ async function writeToFile (data, outputPath) {
   const install = data.install
   const usage = data.usage
   const collaborators = data.contributors
-  if (!collaborators) {
+  if (collaborators.length === 0) {
     const collaborators = ''
     const creditTOC = ''
   } else {
