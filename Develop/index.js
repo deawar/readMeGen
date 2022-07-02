@@ -199,7 +199,7 @@ async function writeToFile (data, outputPath) {
   let mods = ''
   let modArr = []
   const modules = data.modules
-  if (!modules) {
+  if (modules.length === 0) {
     modulesTOC = ''
     mods = ''
   } else {
@@ -214,7 +214,8 @@ async function writeToFile (data, outputPath) {
   let devModArr = []
   let devMods = ''
   const devModules = data.devModules
-  if (!devModules) {
+  if (devModules.length === 0) {
+  //if (!devModules) {
     devModulesTOC = ''
     devMods = ''
   } else {
@@ -309,6 +310,7 @@ async function writeToFile (data, outputPath) {
   header = header + license + '  \n'
   header = header + conCovenant + ' \n'
   header = header + '## Dependencies  \n' + mods
+  header = header + '## Dev-Dependencies  \n' + devMods
   header = header + questions + questionsLink
 
   // [![GitHub forks](https://img.shields.io/github/forks/${username}/${projectTitle}?style=plastic)]({$projectUrl}/network)
