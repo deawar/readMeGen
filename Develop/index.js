@@ -45,7 +45,7 @@ const questions = [
   },
   {
     type: 'input',
-    message: "What is your Project's title?",
+    message: "What is your GitHub Repo Project's title?",
     name: 'projectTitle'
   },
   {
@@ -292,7 +292,8 @@ async function writeToFile (data, outputPath) {
   // ${projectDescription}
   header = header + '## Badges  \n'
   header = header + '[![GitHub issues](https://img.shields.io/github/issues/' + username + '/' + projectTitle + '?style=plastic)](' + urprojectUrl + '/network)' // + "\n";
-  header = header + '[![GitHub forks](https://img.shields.io/github/forks/' + username + '/' + projectTitle + '?style=plastic)](' + projectUrl + '/network)'
+  header = header + '[![GitHub forks](https://img.shields.io/github/forks/' + username + '/' + projectTitle + '?style=plastic)](' + urprojectUrl + '/network)'
+  header = header + '[![GitHub pull-requests closed](https://img.shields.io/github/issues-pr-closed/' + username + '/' + projectTitle + '?style=plastic)](' + urprojectUrl + '/pull/)'
   header = header + conCovenantBadge + '\n'
   header = header + '## Description  ' + '\n'
   header = header + '  ' + projectDescription + '  \n'
