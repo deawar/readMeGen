@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ReadMeGen</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+</head>
+<body>
+    <h1>ReadMeGen</h1>
+    <div class="container">
+        <div style="border:2px solid black;border-radius:3px;padding:5px;display:inline-block" draggable="true" id="drag">Drag me</div>
+        <script src="renderer.js"></script>
+    </div>
+    <div class="footer">
+        <p>
+            We are using:<br> 
+            Node.js <span id="node-version"></span><br>
+            Chromium <span id="chrome-version"></span><br>
+            Electron <span id="electron-version"></span><br>
+        </p>
+    </div>
+    <script src="./Develop/index.js"></script>
+</body>
+</html>
