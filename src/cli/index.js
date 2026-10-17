@@ -5,36 +5,12 @@ import chalk from 'chalk'
 import figlet from 'figlet'
 import dotenv from 'dotenv'
 import { fetchGitHubUser } from '../github/fetchGitHubUser.js'
-import { generateReadme } from '../core/generateReadme.js'
+import { buildReadme } from '../core/buildReadme.js'
 import { FIELDS } from './fields.js'
 import { runInterview } from './interview.js'
 
-/**
- * Split comma-separated prompt input into a clean array: trim each item and
- * drop empties (handles stray spaces and trailing commas). Empty → [].
- */
-export function parseList (input) {
-  return String(input || '')
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean)
-}
-
-/**
- * Resolve contributor usernames to user objects, awaiting each lookup in turn
- * (fixes bug #4). Usernames that don't resolve (not found or unreachable) are
- * skipped rather than blocking generation.
- * @param {string[]} names
- * @param {(name: string) => Promise<{ok: boolean, user?: object}>} lookup
- */
-export async function resolveContributors (names, lookup) {
-  const resolved = []
-  for (const name of names) {
-    const result = await lookup(name)
-    if (result.ok) resolved.push(result.user)
-  }
-  return resolved
-}
+// Re-exported from their new home so existing importers/tests keep working.
+export { parseList, resolveContributors } from '../core/buildReadme.js'
 
 /** True only when a GitHub lookup failed because the API was unreachable. */
 export function authorFallbackNeeded (result) {
@@ -117,22 +93,12 @@ async function main () {
 
   const raw = await runInterview({ fields: FIELDS, io })
 
-  const contributors = await resolveContributors(
-    parseList(raw.contributors),
-    (name) => fetchGitHubUser(name, { token })
-  )
-
-  const answers = {
-    ...raw,
-    builtWith: parseList(raw.builtWith),
-    modules: parseList(raw.modules),
-    devModules: parseList(raw.devModules),
-    contributors,
-    author: raw.author
-  }
+  const { markdown } = await buildReadme(raw, {
+    lookup: (name) => fetchGitHubUser(name, { token })
+  })
 
   const outPath = `${raw.projectTitle || 'README'}.md`
-  writeFileSync(outPath, generateReadme(answers))
+  writeFileSync(outPath, markdown)
   console.log(chalk.cyan(figlet.textSync(`Wrote ${outPath}!`)))
   console.log(chalk.green(figlet.textSync('ReadMe Complete!')))
 }
