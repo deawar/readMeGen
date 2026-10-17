@@ -9,6 +9,20 @@ const SECTION_MAP = new Map(
     .map(s => [s.heading.toLowerCase().replace(/\s+/g, ' '), { type: s.type, level: s.level }])
 )
 
+// ── Managed key set (derived from managed.js, never hardcoded) ──
+// Emit dummy calls with every optional enabled so we capture the full set.
+const _dummyRefs = emitRefs({ owner: 'o', repo: 'r', linkedin: 'l', conCov: true })
+const _dummyShields = emitShields({ owner: 'o', repo: 'r', linkedin: 'l', conCov: true })
+const MANAGED_KEYS = new Set()
+for (const line of [..._dummyRefs.split('\n'), ..._dummyShields.split('\n')]) {
+  // Ref-def labels: [key]: value
+  const rm = line.match(/^\[([^\]]+)\]:/)
+  if (rm) MANAGED_KEYS.add(rm[1])
+  // Shield badge image-ref and link-ref labels: [![alt][img-ref]][link-ref]
+  const sm = line.match(/\[!\[[^\]]*\]\[([^\]]+)\]\]\[([^\]]+)\]/)
+  if (sm) { MANAGED_KEYS.add(sm[1]); MANAGED_KEYS.add(sm[2]) }
+}
+
 function normHeading (h) {
   return h.toLowerCase().replace(/\s+/g, ' ').trim()
 }
@@ -72,13 +86,12 @@ export function parseDocument (markdown) {
   // Fence toggle: line whose trimmed content starts with ``` or ~~~
   const fenceRe = /^(`{3,}|~{3,})/
 
-  // Shield-badge lines: [![alt][img-ref]][link-ref] style (reference-style image links only).
-  // The distinguishing mark is `]][` after the image reference — two closes then an open.
+  // Shield-badge lines: [![alt][img-ref]][link-ref] — captures img-ref label in group 1.
   // Inline image links like [![screenshot](url)](url) use `](` instead, so they are kept.
-  const shieldRe = /^\[!\[[^\]]*\]\[[^\]]+\]\]\[/
+  const shieldLabelRe = /^\[!\[[^\]]*\]\[([^\]]+)\]\]\[/
 
-  // Ref-link definition lines
-  const refRe = /^\[[^\]]+\]:/
+  // Ref-link definition lines — captures label in group 1.
+  const refLabelRe = /^\[([^\]]+)\]:/
 
   // <details> block detection
   let inDetails = false
@@ -109,10 +122,28 @@ export function parseDocument (markdown) {
     if (!inFence) {
       if (line.trim() === '<a id="readme-top"></a>') continue
       if (line === BACK_TO_TOP) continue
-      if (shieldRe.test(line)) continue
-      if (refRe.test(line)) continue
+
+      // Only strip ref-def lines whose label is a managed key (Finding 1)
+      const refM = refLabelRe.exec(line)
+      if (refM) {
+        if (MANAGED_KEYS.has(refM[1])) continue
+        // Non-managed ref-def: keep as body content
+      }
+
+      // Only strip shield badge lines whose image-ref label is a managed key (Finding 1)
+      const shieldM = shieldLabelRe.exec(line)
+      if (shieldM) {
+        if (MANAGED_KEYS.has(shieldM[1])) continue
+        // Non-managed badge: keep as body content
+      }
+
       // MARKDOWN LINKS & IMAGES comment banner
       if (line.trim() === '<!-- MARKDOWN LINKS & IMAGES -->') continue
+      // https://... comment lines that appear right after that banner
+      if (/^<!-- https?:\/\//.test(line)) continue
+
+      // Section banner comments: <!-- SECTION NAME --> (Finding 2)
+      if (/^<!-- [A-Z0-9 &/-]+ -->$/.test(line.trim())) continue
     }
 
     // Heading boundary (only outside a fence)
