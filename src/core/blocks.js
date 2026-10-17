@@ -1,4 +1,5 @@
-import { KNOWN_SECTIONS, BACK_TO_TOP, slug } from './managed.js'
+import { KNOWN_SECTIONS, BACK_TO_TOP, slug, emitShields, emitRefs, emitToc } from './managed.js'
+import { parseRepo } from './generateReadme.js'
 
 // Lookup map: normalised heading text → { type, level }
 // Normalise: lowercase and collapse whitespace
@@ -71,8 +72,10 @@ export function parseDocument (markdown) {
   // Fence toggle: line whose trimmed content starts with ``` or ~~~
   const fenceRe = /^(`{3,}|~{3,})/
 
-  // Shield-badge lines: [![…]][…-url] style
-  const shieldRe = /^\[!\[/
+  // Shield-badge lines: [![alt][img-ref]][link-ref] style (reference-style image links only).
+  // The distinguishing mark is `]][` after the image reference — two closes then an open.
+  // Inline image links like [![screenshot](url)](url) use `](` instead, so they are kept.
+  const shieldRe = /^\[!\[[^\]]*\]\[[^\]]+\]\]\[/
 
   // Ref-link definition lines
   const refRe = /^\[[^\]]+\]:/
@@ -174,4 +177,65 @@ export function parseDocument (markdown) {
     meta: { projectUrl, linkedin, conCov, tableOfContents },
     blocks
   }
+}
+
+/**
+ * Render a single block to a markdown string (heading + body).
+ * @param {{ heading: string, level: number, body: string }} block
+ * @returns {string}
+ */
+function renderBlock (block) {
+  const prefix = '#'.repeat(block.level) + ' ' + block.heading
+  return block.body ? prefix + '\n\n' + block.body : prefix
+}
+
+/**
+ * Serialize a Document back to a README markdown string.
+ * The output is byte-for-byte identical to the generateReadme output when the
+ * document was produced by parseDocument(generateReadme(fixture)).
+ * @param {{ meta: { projectUrl: string, linkedin: string, conCov: boolean, tableOfContents: boolean }, blocks: Array }} doc
+ * @returns {string}
+ */
+export function serializeDocument (doc) {
+  const { meta, blocks } = doc
+  const { owner, repo } = parseRepo(meta.projectUrl)
+  const { linkedin, conCov, tableOfContents } = meta
+
+  // Derive TOC flags from which section types are actually present.
+  const hasType = (type) => blocks.some(b => b.type === type)
+  const hasModules = hasType('dependencies')
+  const hasDevModules = hasType('devDependencies')
+  const includePrerequisites = hasType('prerequisites')
+  const includeRoadmap = hasType('roadmap')
+  const includeAcknowledgments = hasType('acknowledgments')
+
+  const headerBlock = blocks.find(b => b.type === 'header')
+  const sectionBlocks = blocks.filter(b => b.type !== 'header')
+
+  const pieces = []
+  pieces.push('<a id="readme-top"></a>')
+  pieces.push(emitShields({ owner, repo, linkedin, conCov }))
+  if (headerBlock) pieces.push(headerBlock.body)
+  if (tableOfContents) {
+    pieces.push(emitToc({ hasModules, hasDevModules, includePrerequisites, includeRoadmap, includeAcknowledgments }))
+  }
+
+  // Emit section blocks; insert BACK_TO_TOP before each level-2 block except the first.
+  let firstLevel2Seen = false
+  for (const block of sectionBlocks) {
+    if (block.level === 2) {
+      if (firstLevel2Seen) {
+        pieces.push(BACK_TO_TOP)
+      } else {
+        firstLevel2Seen = true
+      }
+    }
+    pieces.push(renderBlock(block))
+  }
+
+  // Final BACK_TO_TOP before refs.
+  pieces.push(BACK_TO_TOP)
+  pieces.push(emitRefs({ owner, repo, linkedin, conCov }))
+
+  return pieces.join('\n\n') + '\n'
 }
