@@ -2,11 +2,13 @@
   "name": "readmegen",
   "version": "1.0.0",
   "description": "Electron desktop app to autogenerate a README.md from GitHub project info",
-  "main": "main.js",
+  "main": "main.cjs",
+  "type": "module",
   "scripts": {
     "start": "electron .",
+    "cli": "node src/cli/index.js",
     "lint": "standard",
-    "test": "standard"
+    "test": "node --test"
   },
   "repository": {
     "type": "git",
@@ -18,11 +20,17 @@
     "axios": "^1.20.0",
     "chalk": "^5.0.1",
     "dotenv": "^16.0.1",
+    "figlet": "^1.5.2",
     "inquirer": "^9.0.0",
     "open": "^8.4.0"
   },
   "devDependencies": {
     "electron": "^44.0.0",
     "standard": "^17.0.0"
+  },
+  "standard": {
+    "ignore": [
+      "Develop/"
+    ]
   }
 }
