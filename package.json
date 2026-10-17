@@ -1,24 +1,28 @@
 {
-  "name": "static-site",
+  "name": "readmegen",
   "version": "1.0.0",
-  "description": "",
+  "description": "Electron desktop app to autogenerate a README.md from GitHub project info",
   "main": "main.js",
   "scripts": {
-    "start":"electron .",
-    "test": "standard && electron ."
+    "start": "electron .",
+    "lint": "standard",
+    "test": "standard"
   },
-  "author": "",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deawar/readMeGen.git"
+  },
+  "author": "Dean Warren",
+  "license": "MIT",
   "dependencies": {
-    "axios": "^0.27.2",
+    "axios": "^1.20.0",
     "chalk": "^5.0.1",
     "dotenv": "^16.0.1",
-    "electron-html-to": "^2.6.1",
     "inquirer": "^9.0.0",
     "open": "^8.4.0"
   },
   "devDependencies": {
-    "electron": "^26.0.0",
+    "electron": "^44.0.0",
     "standard": "^17.0.0"
   }
 }

@@ -9,13 +9,13 @@ const api = async (username) => {
     // const gitInfo = await getUser (username);
     console.log('secret message check: ', process.env.SECRET_MESSAGE)
     console.log('the Below Token variable: ', { THIRD_ITEM })
-    const gitUrl = `https://api.github.com/users/${username}` // ${TOKEN}
+    const gitUrl = `https://api.github.com/users/${username}`
     const response = await axios({
       method: 'get',
       url: gitUrl,
-      headers: {
-        authorization: `token:${TOKEN}`
-      }
+      // Authenticate only when a token is provided; otherwise GitHub serves
+      // public data unauthenticated (rate-limited to 60 requests/hour).
+      headers: TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {}
     })
     console.log('/n Line 25 Response Data: ', response.data.email)
     const { html_url, login, avatar_url, repos_url, email, name, bio } = response.data
