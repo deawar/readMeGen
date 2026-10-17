@@ -59,22 +59,24 @@ function header ({ projectTitle, tagline, logoPath, docsUrl, demoUrl, projectUrl
   return lines.join('\n')
 }
 
-function toc ({ hasModules, hasDevModules }) {
+function toc ({ hasModules, hasDevModules, includePrerequisites, includeRoadmap, includeAcknowledgments }) {
+  const gettingStartedSub = ['        <li><a href="#installation">Installation</a></li>']
+  if (includePrerequisites) gettingStartedSub.unshift('        <li><a href="#prerequisites">Prerequisites</a></li>')
   const items = [
     '    <li>\n      <a href="#about-the-project">About The Project</a>\n      <ul>\n        <li><a href="#built-with">Built With</a></li>\n      </ul>\n    </li>',
-    '    <li>\n      <a href="#getting-started">Getting Started</a>\n      <ul>\n        <li><a href="#prerequisites">Prerequisites</a></li>\n        <li><a href="#installation">Installation</a></li>\n      </ul>\n    </li>',
+    `    <li>\n      <a href="#getting-started">Getting Started</a>\n      <ul>\n${gettingStartedSub.join('\n')}\n      </ul>\n    </li>`,
     '    <li><a href="#usage">Usage</a></li>',
     '    <li><a href="#testing">Testing</a></li>'
   ]
   if (hasModules) items.push('    <li><a href="#dependencies">Dependencies</a></li>')
   if (hasDevModules) items.push('    <li><a href="#dev-dependencies">Dev-Dependencies</a></li>')
+  if (includeRoadmap) items.push('    <li><a href="#roadmap">Roadmap</a></li>')
   items.push(
-    '    <li><a href="#roadmap">Roadmap</a></li>',
     '    <li><a href="#contributing">Contributing</a></li>',
     '    <li><a href="#license">License</a></li>',
-    '    <li><a href="#contact">Contact</a></li>',
-    '    <li><a href="#acknowledgments">Acknowledgments</a></li>'
+    '    <li><a href="#contact">Contact</a></li>'
   )
+  if (includeAcknowledgments) items.push('    <li><a href="#acknowledgments">Acknowledgments</a></li>')
   return ['<details>', '  <summary>Table of Contents</summary>', '  <ol>', items.join('\n'), '  </ol>', '</details>'].join('\n')
 }
 
@@ -105,6 +107,13 @@ export function generateReadme (answers) {
   const hasModules = a.modules.length > 0
   const hasDevModules = a.devModules.length > 0
 
+  // Optional prose sections: included unless the front-end explicitly opts out
+  // (per-section prompt). Excluding a section drops its body and TOC entry.
+  const includePrerequisites = a.includePrerequisites !== false
+  const includeRoadmap = a.includeRoadmap !== false
+  const includeAcknowledgments = a.includeAcknowledgments !== false
+  const includeWhy = a.includeWhy !== false
+
   const prerequisites = a.prerequisites ||
     'List anything users need before they begin.\n* npm\n  ```sh\n  npm install npm@latest -g\n  ```'
   const roadmap = a.roadmap ||
@@ -117,19 +126,20 @@ export function generateReadme (answers) {
   blocks.push(shields({ owner, repo, repoBase, linkedin: a.linkedin, conCov: a.conCov }))
   blocks.push(header({ ...a, repoBase }))
 
-  if (a.tableOfContents) blocks.push(toc({ hasModules, hasDevModules }))
+  if (a.tableOfContents) blocks.push(toc({ hasModules, hasDevModules, includePrerequisites, includeRoadmap, includeAcknowledgments }))
 
   // About
   const about = ['## About The Project', '']
   if (a.screenshotPath) about.push(`[![Product Screenshot](${a.screenshotPath})](${a.demoUrl || a.projectUrl})`, '')
-  about.push(a.description, '', "Here's why this project is worth your time:", '* Saves you from writing a README by hand', '* Keeps a consistent structure across your projects')
+  about.push(a.description)
+  if (includeWhy) about.push('', "Here's why this project is worth your time:", '* Saves you from writing a README by hand', '* Keeps a consistent structure across your projects')
   blocks.push(about.join('\n'))
   blocks.push(builtWith(a.builtWith))
   blocks.push(BACK_TO_TOP)
 
   // Getting Started
   blocks.push('## Getting Started')
-  blocks.push(`### Prerequisites\n\n${prerequisites}`)
+  if (includePrerequisites) blocks.push(`### Prerequisites\n\n${prerequisites}`)
   blocks.push(`### Installation\n\n1. Clone the repo\n   \`\`\`sh\n   git clone ${repoBase}.git\n   \`\`\`\n2. Install dependencies\n   \`\`\`sh\n   ${a.install}\n   \`\`\``)
   blocks.push(BACK_TO_TOP)
 
@@ -152,8 +162,10 @@ export function generateReadme (answers) {
   }
 
   // Roadmap
-  blocks.push(`## Roadmap\n\n${roadmap}`)
-  blocks.push(BACK_TO_TOP)
+  if (includeRoadmap) {
+    blocks.push(`## Roadmap\n\n${roadmap}`)
+    blocks.push(BACK_TO_TOP)
+  }
 
   // Contributing
   const contributing = [
@@ -211,8 +223,10 @@ export function generateReadme (answers) {
   blocks.push(BACK_TO_TOP)
 
   // Acknowledgments
-  blocks.push(`## Acknowledgments\n\n${acknowledgments}`)
-  blocks.push(BACK_TO_TOP)
+  if (includeAcknowledgments) {
+    blocks.push(`## Acknowledgments\n\n${acknowledgments}`)
+    blocks.push(BACK_TO_TOP)
+  }
 
   // Reference-style link definitions
   const refs = [
