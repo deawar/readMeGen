@@ -71,6 +71,26 @@ test('no "undefined" appears anywhere in output (bug #2)', () => {
   assert.ok(!generateReadme(base).includes('undefined'))
 })
 
+test('core tolerates missing optional fields without throwing (spec §4.2)', () => {
+  const minimal = { ...base }
+  delete minimal.modules
+  delete minimal.devModules
+  delete minimal.builtWith
+  delete minimal.contributors
+  const md = generateReadme(minimal) // must not throw
+  assert.ok(!md.includes('## Dependencies'))
+  assert.ok(!md.includes('undefined'))
+})
+
+test('resolved contributors render as avatar thumbnails (spec §5)', () => {
+  const md = generateReadme({
+    ...base,
+    contributors: [{ login: 'octocat', name: 'The Octocat', html_url: 'https://github.com/octocat', avatar_url: 'https://avatars.githubusercontent.com/u/583231?v=4' }]
+  })
+  assert.match(md, /octocat/)
+  assert.match(md, /avatars\.githubusercontent\.com\/u\/583231/)
+})
+
 test('full fixture matches the committed golden snapshot', () => {
   const expected = readFileSync(join(here, 'fixtures/expected-full.md'), 'utf8')
   assert.equal(generateReadme(fullAnswers), expected)

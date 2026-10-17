@@ -145,6 +145,8 @@ Contributions are what make the open source community such an amazing place to l
 
 ### Top contributors:
 
+<a href="https://github.com/octocat" title="The Octocat"><img src="https://avatars.githubusercontent.com/u/583231?v=4&s=48" width="48" height="48" alt="octocat" /></a>
+
 <a href="https://github.com/deawar/readMeGen/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=deawar/readMeGen" alt="contrib.rocks image" />
 </a>

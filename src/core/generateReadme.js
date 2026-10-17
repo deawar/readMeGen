@@ -84,7 +84,21 @@ function builtWith (items) {
 }
 
 export function generateReadme (answers) {
-  const a = answers
+  // Defend against missing optional fields (spec §4.2): normalize arrays to []
+  // and directly-interpolated strings to '' so the core never emits `undefined`
+  // regardless of which front-end assembled the answers.
+  const a = {
+    tagline: '',
+    description: '',
+    install: '',
+    usage: '',
+    tests: '',
+    ...answers,
+    builtWith: Array.isArray(answers.builtWith) ? answers.builtWith : [],
+    modules: Array.isArray(answers.modules) ? answers.modules : [],
+    devModules: Array.isArray(answers.devModules) ? answers.devModules : [],
+    contributors: Array.isArray(answers.contributors) ? answers.contributors : []
+  }
   const { owner, repo } = parseRepo(a.projectUrl)
   const repoBase = `https://github.com/${owner}/${repo}`
   const lic = licenseInfo(a.license) || { name: a.license, description: '' }
@@ -154,11 +168,21 @@ export function generateReadme (answers) {
     '5. Open a Pull Request',
     '',
     '### Top contributors:',
-    '',
+    ''
+  ]
+  if (a.contributors.length) {
+    contributing.push(
+      a.contributors
+        .map((c) => `<a href="${c.html_url}" title="${c.name || c.login}"><img src="${c.avatar_url}&s=48" width="48" height="48" alt="${c.login}" /></a>`)
+        .join(' '),
+      ''
+    )
+  }
+  contributing.push(
     `<a href="${repoBase}/graphs/contributors">`,
     `  <img src="https://contrib.rocks/image?repo=${owner}/${repo}" alt="contrib.rocks image" />`,
     '</a>'
-  ]
+  )
   if (a.conCov) {
     contributing.push('', 'This project adheres to the [Contributor Covenant](https://www.contributor-covenant.org/) code of conduct.')
   }
