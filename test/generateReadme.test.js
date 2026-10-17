@@ -91,6 +91,32 @@ test('resolved contributors render as avatar thumbnails (spec §5)', () => {
   assert.match(md, /avatars\.githubusercontent\.com\/u\/583231/)
 })
 
+test('optional prose sections render by default (backward compatible)', () => {
+  const md = generateReadme({ ...base, tableOfContents: true })
+  assert.ok(md.includes('### Prerequisites'))
+  assert.ok(md.includes('## Roadmap'))
+  assert.ok(md.includes('## Acknowledgments'))
+  assert.ok(md.includes("Here's why"))
+})
+
+test('excluded optional prose sections drop their body and TOC entry', () => {
+  const md = generateReadme({
+    ...base,
+    tableOfContents: true,
+    includePrerequisites: false,
+    includeRoadmap: false,
+    includeAcknowledgments: false,
+    includeWhy: false
+  })
+  assert.ok(!md.includes('### Prerequisites'))
+  assert.ok(!md.includes('## Roadmap'))
+  assert.ok(!md.includes('## Acknowledgments'))
+  assert.ok(!md.includes("Here's why"))
+  assert.ok(!/<a href="#prerequisites">/.test(md))
+  assert.ok(!/<a href="#roadmap">/.test(md))
+  assert.ok(!/<a href="#acknowledgments">/.test(md))
+})
+
 test('full fixture matches the committed golden snapshot', () => {
   const expected = readFileSync(join(here, 'fixtures/expected-full.md'), 'utf8')
   assert.equal(generateReadme(fullAnswers), expected)

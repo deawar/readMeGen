@@ -141,10 +141,18 @@ or element gracefully when empty. Prose-heavy fields default to the template's
 
   // --- sections ---
   tableOfContents: boolean,       // render collapsible <details> TOC
-  roadmap:         string,        // (optional; placeholder checklist default)
-  acknowledgments: string,        // (optional; placeholder list default)
+  roadmap:         string,        // (optional; placeholder checklist when included-but-blank)
+  acknowledgments: string,        // (optional; placeholder list when included-but-blank)
   conCov:          boolean,       // Contributor Covenant badge + note  [KEPT]
   license:         string,        // one of the known license keys
+
+  // --- optional prose section toggles (per-section prompt; see §5 note) ---
+  // Each defaults to TRUE when absent. When false, the core omits that
+  // section's body AND its TOC entry. When true + blank text, placeholder.
+  includeWhy:            boolean, // About "Here's why" bullets
+  includePrerequisites:  boolean, // Getting Started → Prerequisites
+  includeRoadmap:        boolean, // Roadmap section
+  includeAcknowledgments: boolean, // Acknowledgments section
 
   // --- people (resolved from GitHub BEFORE calling core; manual fallback per §4.6) ---
   author: {                       // README owner → Contact section + Questions content
@@ -338,6 +346,13 @@ Cross-cutting rules:
 - Keep the old tool's extra sections — **Testing**, npm **Dependencies/
   Dev-Dependencies** lists, **Contributor Covenant** option — woven into the
   template; old **Questions** content merged into **Contact** (§5).
+- **(Revised 2026-10-17, post-Phase-1)** Prose sections are no longer
+  always-on placeholders. The CLI asks a per-section yes/no (`includeWhy`,
+  `includePrerequisites`, `includeRoadmap`, `includeAcknowledgments`); excluded
+  sections are omitted entirely (body + TOC entry). Included-but-blank still
+  yields the editable placeholder. CLI defaults: Prerequisites on; Why / Roadmap
+  / Acknowledgments off. Supersedes the original "editable placeholders by
+  default" decision.
 - Offline/rate-limited author lookup: manual-entry fallback (§4.6).
 - String→array parsing: CLI's job; comma-split, trim, drop empties (§4.2).
 - `owner/repo` from `projectUrl`; links use `HEAD`, not `master` (§4.2).
