@@ -4,6 +4,7 @@
 ## Description  
   As a developer I wanted an easier way to create a readme.md file for my projects. This can be run from CLI and eventually as an electron app.
 * [Installation](#installation)  
+* [Configuration](#configuration)  
 * [Usage](#usage)
 * [Testing](#testing)  
 * [License](#license)  
@@ -16,6 +17,39 @@
 ``` 
 npm install 
 ``` 
+## Configuration
+**GitHub Personal Access Token.** ReadMeGen uses the GitHub API to look up your profile (name, avatar, email) and
+to validate any contributors you list. **It works without any setup** — but
+unauthenticated requests are capped at **60 per hour**, and GitHub will not share
+your email address.
+
+Adding a free Personal Access Token raises the limit to **5,000 requests per
+hour** and lets the app read your public email for the Contact/Questions section.
+The token is **optional but strongly recommended**.
+
+### 1. Create a token
+1. Sign in to GitHub and open **Settings → Developer settings → Personal access tokens → Tokens (classic)**.
+2. Click **Generate new token → Generate new token (classic)**.
+3. Name it something like `readMeGen`.
+4. ReadMeGen only reads your public profile, so you need minimal scopes:
+   * **`read:user`** — read your name, avatar, and bio
+   * **`user:email`** — read your email address
+   * No `repo` scope is required.
+5. Click **Generate token** and **copy it immediately** — GitHub shows it only once.
+
+### 2. Add it to a `.env` file
+Create a file named `.env` in the project root:
+
+```
+TOKEN=ghp_your_token_here
+```
+
+The app loads it automatically on startup via [dotenv](https://www.npmjs.com/package/dotenv).
+
+> ⚠️ **Keep it secret.** `.env` is already listed in `.gitignore`, so your token
+> won't be committed. Never paste a real token into code, issues, or screenshots.
+> If a token is ever exposed, revoke it under GitHub → Developer settings.
+
 ## Usage  
 ``` 
 node index.js 
