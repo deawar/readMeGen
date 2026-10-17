@@ -6,8 +6,8 @@ import figlet from 'figlet'
 import dotenv from 'dotenv'
 import { fetchGitHubUser } from '../github/fetchGitHubUser.js'
 import { generateReadme } from '../core/generateReadme.js'
-
-const LICENSES = ['MIT', 'Apache 2.0', 'GNU AGPLv3', 'GNU GPLv3', 'GPLv3', 'Mozilla Public License 2.0', 'The Unlicense']
+import { FIELDS } from './fields.js'
+import { runInterview } from './interview.js'
 
 /**
  * Split comma-separated prompt input into a clean array: trim each item and
@@ -70,42 +70,52 @@ async function resolveAuthor (token) {
   }
 }
 
+// --- inquirer-backed io for the interview controller ---
+
+async function askField (field, current, username) {
+  let def = current ?? field.default
+  if (field.name === 'projectUrl' && !def && username) def = `https://github.com/${username}`
+  const message = field.type === 'input'
+    ? `${field.message} ${chalk.dim('(type < to jump to a field)')}`
+    : field.message
+  const prompt = { type: field.type, name: 'value', message, default: def }
+  if (field.choices) prompt.choices = field.choices
+  const { value } = await inquirer.prompt([prompt])
+  return value
+}
+
+async function showReview (items, { atEnd }) {
+  const choices = items.map((i) => ({ name: i.label, value: i.key }))
+  choices.push(new inquirer.Separator())
+  if (!atEnd) choices.push({ name: 'Continue answering →', value: 'continue' })
+  choices.push({ name: 'Generate the README ✓', value: 'generate' })
+  const { key } = await inquirer.prompt([{
+    type: 'list',
+    name: 'key',
+    message: atEnd ? 'Review your answers — pick one to edit, or Generate:' : 'Jump to a field to edit, or continue:',
+    choices,
+    pageSize: 20
+  }])
+  return key
+}
+
 async function main () {
   dotenv.config()
   const token = process.env.TOKEN
   console.log(chalk.cyan(figlet.textSync('ReadMeGen')))
 
-  const { username, author } = await resolveAuthor(token)
+  let currentUsername = ''
+  const io = {
+    resolveAuthor: async () => {
+      const resolved = await resolveAuthor(token)
+      currentUsername = resolved.username
+      return resolved
+    },
+    askField: (field, current) => askField(field, current, currentUsername),
+    showReview: (items, opts) => showReview(items, opts)
+  }
 
-  const raw = await inquirer.prompt([
-    { type: 'input', name: 'projectTitle', message: "Project's title:" },
-    { type: 'input', name: 'projectUrl', message: 'Project GitHub URL:', default: `https://github.com/${username}` },
-    { type: 'input', name: 'tagline', message: 'One-line tagline:' },
-    { type: 'input', name: 'description', message: 'Description:', default: 'To be written...' },
-    { type: 'confirm', name: 'includeWhy', message: "Include the About section's \"Here's why\" bullets?", default: false },
-    { type: 'input', name: 'logoPath', message: 'Logo image path (optional):' },
-    { type: 'input', name: 'screenshotPath', message: 'Screenshot path (optional):' },
-    { type: 'input', name: 'docsUrl', message: 'Docs URL (optional):' },
-    { type: 'input', name: 'demoUrl', message: 'Demo URL (optional):' },
-    { type: 'input', name: 'builtWith', message: 'Built with (comma-separated frameworks/libraries):' },
-    { type: 'confirm', name: 'includePrerequisites', message: 'Include a Prerequisites section?', default: true },
-    { type: 'input', name: 'prerequisites', message: 'Prerequisites (blank = template placeholder):', when: (ans) => ans.includePrerequisites },
-    { type: 'input', name: 'install', message: 'Install command:', default: 'npm install' },
-    { type: 'input', name: 'usage', message: 'Usage command:', default: 'node index.js' },
-    { type: 'input', name: 'tests', message: 'Test command:', default: 'npm test' },
-    { type: 'input', name: 'modules', message: 'Runtime dependencies (comma-separated npm names):' },
-    { type: 'input', name: 'devModules', message: 'Dev dependencies (comma-separated npm names):' },
-    { type: 'confirm', name: 'tableOfContents', message: 'Include a table of contents?', default: true },
-    { type: 'confirm', name: 'includeRoadmap', message: 'Include a Roadmap section?', default: false },
-    { type: 'input', name: 'roadmap', message: 'Roadmap items (blank = template placeholder):', when: (ans) => ans.includeRoadmap },
-    { type: 'confirm', name: 'includeAcknowledgments', message: 'Include an Acknowledgments section?', default: false },
-    { type: 'input', name: 'acknowledgments', message: 'Acknowledgments (blank = template placeholder):', when: (ans) => ans.includeAcknowledgments },
-    { type: 'confirm', name: 'conCov', message: 'Adopt the Contributor Covenant?', default: false },
-    { type: 'list', name: 'license', message: 'License:', choices: LICENSES, default: 'MIT' },
-    { type: 'input', name: 'contributors', message: 'Contributors (comma-separated GitHub usernames, optional):' },
-    { type: 'input', name: 'twitter', message: 'Twitter handle (optional):' },
-    { type: 'input', name: 'linkedin', message: 'LinkedIn URL (optional):' }
-  ])
+  const raw = await runInterview({ fields: FIELDS, io })
 
   const contributors = await resolveContributors(
     parseList(raw.contributors),
@@ -118,7 +128,7 @@ async function main () {
     modules: parseList(raw.modules),
     devModules: parseList(raw.devModules),
     contributors,
-    author
+    author: raw.author
   }
 
   const outPath = `${raw.projectTitle || 'README'}.md`
