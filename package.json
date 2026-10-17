@@ -27,10 +27,5 @@
   "devDependencies": {
     "electron": "^44.0.0",
     "standard": "^17.0.0"
-  },
-  "standard": {
-    "ignore": [
-      "Develop/"
-    ]
   }
 }
