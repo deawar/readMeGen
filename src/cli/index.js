@@ -123,8 +123,8 @@ async function main () {
 
   const outPath = `${raw.projectTitle || 'README'}.md`
   writeFileSync(outPath, generateReadme(answers))
+  console.log(chalk.cyan(figlet.textSync(`Wrote ${outPath}!`)))
   console.log(chalk.green(figlet.textSync('ReadMe Complete!')))
-  console.log(chalk.white(`Wrote ${outPath}`))
 }
 
 // Run only when invoked directly, not when imported for tests.
