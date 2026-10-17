@@ -1,11 +1,10 @@
 import { licenseInfo } from './licenses.js'
+import { BACK_TO_TOP, emitShields, emitRefs, emitToc } from './managed.js'
 
 // Pure README generator — no I/O, no network, no console, no env.
 // Output follows the othneildrew Best-README-Template (design §5), with the
 // old tool's Testing / Dependencies / Dev-Dependencies / Contributor Covenant
 // sections woven in and the old "Questions" content merged into Contact.
-
-const BACK_TO_TOP = '<p align="right">(<a href="#readme-top">back to top</a>)</p>'
 
 /**
  * Derive { owner, repo } from a GitHub project URL.
@@ -20,19 +19,6 @@ export function parseRepo (projectUrl) {
 }
 
 const list = (items, render) => items.map(render).join('\n')
-
-function shields ({ owner, repo, repoBase, linkedin, linkedinUrl, conCov }) {
-  const lines = [
-    '[![Contributors][contributors-shield]][contributors-url]',
-    '[![Forks][forks-shield]][forks-url]',
-    '[![Stargazers][stars-shield]][stars-url]',
-    '[![Issues][issues-shield]][issues-url]',
-    '[![License][license-shield]][license-url]'
-  ]
-  if (linkedin) lines.push('[![LinkedIn][linkedin-shield]][linkedin-url]')
-  if (conCov) lines.push('[![Contributor Covenant][covenant-shield]][covenant-url]')
-  return lines.join('\n')
-}
 
 function header ({ projectTitle, tagline, logoPath, docsUrl, demoUrl, projectUrl, repoBase }) {
   const lines = ['<br />', '<div align="center">', `  <a href="${projectUrl}">`]
@@ -57,27 +43,6 @@ function header ({ projectTitle, tagline, logoPath, docsUrl, demoUrl, projectUrl
     '</div>'
   )
   return lines.join('\n')
-}
-
-function toc ({ hasModules, hasDevModules, includePrerequisites, includeRoadmap, includeAcknowledgments }) {
-  const gettingStartedSub = ['        <li><a href="#installation">Installation</a></li>']
-  if (includePrerequisites) gettingStartedSub.unshift('        <li><a href="#prerequisites">Prerequisites</a></li>')
-  const items = [
-    '    <li>\n      <a href="#about-the-project">About The Project</a>\n      <ul>\n        <li><a href="#built-with">Built With</a></li>\n      </ul>\n    </li>',
-    `    <li>\n      <a href="#getting-started">Getting Started</a>\n      <ul>\n${gettingStartedSub.join('\n')}\n      </ul>\n    </li>`,
-    '    <li><a href="#usage">Usage</a></li>',
-    '    <li><a href="#testing">Testing</a></li>'
-  ]
-  if (hasModules) items.push('    <li><a href="#dependencies">Dependencies</a></li>')
-  if (hasDevModules) items.push('    <li><a href="#dev-dependencies">Dev-Dependencies</a></li>')
-  if (includeRoadmap) items.push('    <li><a href="#roadmap">Roadmap</a></li>')
-  items.push(
-    '    <li><a href="#contributing">Contributing</a></li>',
-    '    <li><a href="#license">License</a></li>',
-    '    <li><a href="#contact">Contact</a></li>'
-  )
-  if (includeAcknowledgments) items.push('    <li><a href="#acknowledgments">Acknowledgments</a></li>')
-  return ['<details>', '  <summary>Table of Contents</summary>', '  <ol>', items.join('\n'), '  </ol>', '</details>'].join('\n')
 }
 
 function builtWith (items) {
@@ -123,10 +88,10 @@ export function generateReadme (answers) {
 
   const blocks = []
   blocks.push('<a id="readme-top"></a>')
-  blocks.push(shields({ owner, repo, repoBase, linkedin: a.linkedin, conCov: a.conCov }))
+  blocks.push(emitShields({ owner, repo, linkedin: a.linkedin, conCov: a.conCov }))
   blocks.push(header({ ...a, repoBase }))
 
-  if (a.tableOfContents) blocks.push(toc({ hasModules, hasDevModules, includePrerequisites, includeRoadmap, includeAcknowledgments }))
+  if (a.tableOfContents) blocks.push(emitToc({ hasModules, hasDevModules, includePrerequisites, includeRoadmap, includeAcknowledgments }))
 
   // About
   const about = ['## About The Project', '']
@@ -229,27 +194,7 @@ export function generateReadme (answers) {
   }
 
   // Reference-style link definitions
-  const refs = [
-    `[contributors-shield]: https://img.shields.io/github/contributors/${owner}/${repo}.svg?style=for-the-badge`,
-    `[contributors-url]: ${repoBase}/graphs/contributors`,
-    `[forks-shield]: https://img.shields.io/github/forks/${owner}/${repo}.svg?style=for-the-badge`,
-    `[forks-url]: ${repoBase}/network/members`,
-    `[stars-shield]: https://img.shields.io/github/stars/${owner}/${repo}.svg?style=for-the-badge`,
-    `[stars-url]: ${repoBase}/stargazers`,
-    `[issues-shield]: https://img.shields.io/github/issues/${owner}/${repo}.svg?style=for-the-badge`,
-    `[issues-url]: ${repoBase}/issues`,
-    `[license-shield]: https://img.shields.io/github/license/${owner}/${repo}.svg?style=for-the-badge`,
-    `[license-url]: ${repoBase}/blob/HEAD/LICENSE`
-  ]
-  if (a.linkedin) {
-    refs.push('[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555')
-    refs.push(`[linkedin-url]: ${a.linkedin}`)
-  }
-  if (a.conCov) {
-    refs.push('[covenant-shield]: https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg?style=for-the-badge')
-    refs.push(`[covenant-url]: ${repoBase}/blob/HEAD/CODE_OF_CONDUCT.md`)
-  }
-  blocks.push('<!-- MARKDOWN LINKS & IMAGES -->\n' + refs.join('\n'))
+  blocks.push(emitRefs({ owner, repo, linkedin: a.linkedin, conCov: a.conCov }))
 
   return blocks.join('\n\n') + '\n'
 }
