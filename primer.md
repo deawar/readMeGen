@@ -1,6 +1,6 @@
 # ReadMeGen — Session Primer
 
-> Resume point for picking the project back up. Last updated 2026-10-17 (after CLI back-navigation).
+> Resume point for picking the project back up. Last updated 2026-10-17 (after the buildReadme Phase-2 prep refactor).
 
 ## What this is
 A developer tool that interviews you about a project and generates a complete,
@@ -15,6 +15,10 @@ generation core so their output is identical.
 - **CLI back-navigation: DONE** — merged/pushed. Type `<` at any text prompt to open
   a jump-list, edit any earlier answer (incl. the GitHub username), then Continue or
   Generate; an automatic review runs before anything is written.
+- **Phase-2 prep (buildReadme extraction): DONE** — merged/pushed. The shared
+  orchestration seam `buildReadme(rawAnswers, { lookup }) → { markdown, answers }`
+  lives in `src/core/buildReadme.js`; the CLI already routes through it and the GUI
+  main process will call the same function.
 - **27 tests pass, `standard` lint clean.**
 - **Phase 2 (Electron GUI): NOT STARTED.** The shared core is ready for it.
 - Untracked generated test READMEs may sit in the root (e.g. `Cathi-s-Portfolio.md`,
@@ -32,6 +36,8 @@ src/
     licenses.js          licenseInfo(key) → {key,name,spdx,description}
     generateReadme.js    generateReadme(answers) → string  (PURE: no I/O/net/console)
                          also exports parseRepo(projectUrl) → {owner,repo}
+    buildReadme.js       buildReadme(rawAnswers,{lookup}) → {markdown,answers}  (shared
+                         orchestration: parseList + resolveContributors + generateReadme)
   github/
     fetchGitHubUser.js   fetchGitHubUser(username,{token,client}) → {ok,user}|{ok:false,reason}
   cli/
@@ -58,7 +64,7 @@ collector feeding the same `generateReadme`).
 
 ## Commands
 - `npm run cli`  — run the CLI (needs a real terminal; inquirer requires a TTY)
-- `npm test`     — `node --test` (27 tests)
+- `npm test`     — `node --test` (29 tests)
 - `npm run lint` — `standard` (the gate; must be clean to commit)
 - `npm start`    — launch the Electron shell (currently the leftover drag-demo window)
 
@@ -95,30 +101,25 @@ collector feeding the same `generateReadme`).
   those. Deferred minors noted in the back-nav plan/commits.
 
 ## NEXT STEPS — Phase 2: the GUI
-Run it as its own brainstorm → design-doc update → plan → TDD build. Design doc
-**§6** reserves the seam.
+The shared seam (`buildReadme`) is done — remaining work is pure front-end. Run it
+as its own brainstorm → design-doc update → plan → TDD build. Design doc **§6**
+reserves the seam. **The GUI's job: collect a `rawAnswers` object (form) → call
+`buildReadme` → show the markdown (preview) and save it.**
 
-1. **START HERE — prep refactor (DRY, no design decisions needed):** extract the
-   orchestration glue in `main()` (resolve author → resolve contributors →
-   assemble answers → `generateReadme`) into a shared, testable module, e.g.
-   `src/core/buildReadme.js`:
-   `buildReadme(rawAnswers, { token, lookup }) → { markdown, author, contributors }`.
-   Then CLI = "interview → buildReadme → write"; GUI = "form → buildReadme →
-   preview + save." Behavior-preserving; TDD with an injected `lookup`. This is the
-   cleanest thing to do first — it needs no UI decisions and de-duplicates the seam.
-2. **Brainstorm the window shape FIRST (the one real design fork):** one long form
-   vs. stepped wizard vs. form-with-live-preview-beside-it.
-3. **IPC contract:** channels — at least `generate` (answers → markdown); likely
+1. **START HERE — brainstorm the window shape (the one real design fork):** one long
+   form vs. stepped wizard vs. form-with-live-preview-beside-it. Decide before
+   building any UI.
+2. **IPC contract:** channels — at least `generate` (rawAnswers → markdown); likely
    `lookup-user` (live username validation) and `save` (native Save dialog + write).
    GitHub lookups live in the **main process** (token stays out of the renderer).
-4. **main.cjs:** `ipcMain.handle(...)`; dynamic-import the ESM core; call
+3. **main.cjs:** `ipcMain.handle(...)`; dynamic-import the ESM core; call
    `buildReadme`; save dialog.
-5. **preload.cjs:** replace the drag-demo with a `contextBridge` API wrapping
+4. **preload.cjs:** replace the drag-demo with a `contextBridge` API wrapping
    `ipcRenderer.invoke`. Keep `contextIsolation: true`, `nodeIntegration: false`.
-6. **Renderer (index.html + new renderer.js):** the bulk — a form for every
+5. **Renderer (index.html + new renderer.js):** the bulk — a form for every
    `answers` field (incl. per-section toggles + license dropdown), a live Markdown
    **preview pane**, Generate/Save buttons, manual-author fallback as fields.
-7. **Cleanup:** remove the drag demo (`ondragstart`, "Drag me" div,
+6. **Cleanup:** remove the drag demo (`ondragstart`, "Drag me" div,
    `iconForDragAndDrop`) and wire the real `renderer.js`.
 
 ## Housekeeping loose ends
