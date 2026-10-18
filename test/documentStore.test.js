@@ -154,3 +154,18 @@ test('blockById returns undefined if no block matches', () => {
   const block = blockById(sampleDoc, 'nonexistent-99')
   assert.equal(block, undefined)
 })
+
+test('moveBlock downward: block lands at the target slot, not one past it', () => {
+  // doc ids: [header-0, about-1, started-2, usage-3]
+  // Move 'about-1' (index 1) to index 3 (the slot currently held by 'usage-3')
+  // Expected result: [header-0, started-2, usage-3, about-1]
+  // i.e. 'about-1' occupies the position that 'usage-3' originally held,
+  // with 'usage-3' shifting up — NOT landing one past index 3.
+  const result = moveBlock(sampleDoc, 'about-1', 3)
+
+  assert.equal(result.blocks.length, sampleDoc.blocks.length, 'block count preserved')
+
+  const ids = result.blocks.map(b => b.id)
+  assert.deepEqual(ids, ['header-0', 'started-2', 'usage-3', 'about-1'],
+    'downward move must place block at the drop-target slot')
+})

@@ -48,10 +48,16 @@ export async function saveReadme (deps, { document } = {}) {
 // ── newReadme ─────────────────────────────────────────────────────────────────
 
 /**
- * Build a default document.
+ * Build a default document and reset the main-held save path.
+ * Clearing pathState.current ensures a subsequent Save will prompt for a new
+ * path instead of silently overwriting whatever file was previously opened.
+ * @param {object} deps
  * @returns {Promise<{document:object}>}
  */
-export async function newReadme () {
+export async function newReadme (deps) {
+  if (deps && deps.pathState) {
+    deps.pathState.current = null
+  }
   const document = await docOps.newDocument()
   return { document }
 }

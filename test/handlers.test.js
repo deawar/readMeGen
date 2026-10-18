@@ -173,6 +173,36 @@ test('newReadme returns a document', async () => {
   assert.ok(Array.isArray(result.document.blocks), 'document has blocks')
 })
 
+test('newReadme resets pathState.current to null (prevents overwriting opened file)', async () => {
+  const deps = makeDeps({ pathState: { current: '/some/opened.md' } })
+  assert.equal(deps.pathState.current, '/some/opened.md', 'pathState.current pre-seeded')
+  const result = await newReadme(deps)
+  assert.equal(deps.pathState.current, null, 'pathState.current must be null after newReadme')
+  assert.ok(result.document && Array.isArray(result.document.blocks), 'returned fresh document with blocks')
+})
+
+test('newReadme → saveReadme exploit sequence: save must prompt dialog, not overwrite opened file', async () => {
+  // Simulate: Open a file (pathState set) → New (should clear pathState) → Save (must use dialog)
+  const written = {}
+  let dialogCalled = false
+  const deps = makeDeps({
+    pathState: { current: '/some/opened.md' },
+    dialog: {
+      showOpen: () => ({ canceled: false, filePaths: ['/some/opened.md'] }),
+      showSave: () => { dialogCalled = true; return { canceled: false, filePath: '/new/save.md' } }
+    },
+    writeFile: async (p, text) => { written[p] = text }
+  })
+  // Step 1: New resets pathState
+  const { document } = await newReadme(deps)
+  assert.equal(deps.pathState.current, null, 'pathState.current cleared by newReadme')
+  // Step 2: Save must invoke the dialog (because pathState.current is now null)
+  const result = await saveReadme(deps, { document })
+  assert.ok(dialogCalled, 'save dialog must have been invoked')
+  assert.ok(!written['/some/opened.md'], 'must NOT have written to the previously opened file')
+  assert.equal(result.path, '/new/save.md', 'must save to the dialog-chosen path')
+})
+
 // ── applyManifest ─────────────────────────────────────────────────────────────
 
 test('applyManifest returns updated document on valid package.json', async () => {

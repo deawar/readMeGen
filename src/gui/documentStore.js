@@ -15,7 +15,9 @@ export function blockById (doc, id) {
 }
 
 /**
- * Move a block from its current position to a new index.
+ * Move a block from its current position to a new index using drop-target
+ * semantics: insert the block at the position currently occupied by the item
+ * at toIndex (the block originally at toIndex shifts accordingly).
  * Returns a new Document; does not mutate the input.
  * @param {{ meta: object, blocks: Array }} doc
  * @param {string} id
