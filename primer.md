@@ -182,6 +182,10 @@ Defense-in-depth on the two HIGH findings, all landed:
     `git tag vX.Y.Z && git push origin vX.Y.Z` → CI builds all three OSes into a
     **draft** release → review on the Releases page → **Publish** (or
     `gh release edit vX.Y.Z --draft=false --latest`).
+  - **Update the README download links** (the Download table) each release — they are
+    **version-pinned** (`…/releases/download/vX.Y.Z/<file>`; filenames carry the version,
+    so there's no "latest asset" redirect). Bump the version in all 5 links + the "current
+    release vX.Y.Z" line, and verify each returns HTTP 200.
   - **CI gotchas already fixed (don't regress):** (1) `.gitattributes` forces LF so the
     Windows golden-snapshot test passes (CRLF checkout broke it); (2) `author` MUST be
     object form with `email` or the linux `.deb` build fails; (3) macos-latest is Apple
