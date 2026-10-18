@@ -1,6 +1,8 @@
 # ReadMeGen — Session Primer
 
-> Resume point for picking the project back up. Last updated 2026-10-17 (after Phase 2b — the Electron GUI window — merged to `master`; **Phase 2 complete**).
+> Resume point for picking the project back up. Last updated 2026-10-18 (after
+> security hardening — DOMPurify sanitization — and packaging/CI release setup
+> merged to `master`; **Phase 2 complete; all security + distribution done**).
 
 ## What this is
 A developer tool that turns project info into a complete, well-formatted
@@ -22,7 +24,8 @@ produce identical output (parity was a Phase-1 goal, deliberately relaxed for th
   The block-editor desktop app: open/new/edit/reorder/save a README as draggable,
   click-to-edit blocks; manifest drop (merge+dedupe); author auto-fill; license
   picker; Edit/Preview/Markdown tabs. **Manually verified working by Dean.**
-  **116 tests pass, `standard` lint clean. One new dep: `markdown-it` (main only).**
+  **127 tests pass, `standard` lint clean. Runtime deps: `markdown-it`, `dompurify`,
+  `jsdom` (all main-only). Dev: `electron-builder` (packaging).**
 - **➡️ PHASE 2 IS COMPLETE.** Both front-ends ship on the shared core. Remaining
   work is hardening/polish — see NEXT STEPS (security first).
 
@@ -69,10 +72,12 @@ src/
                          setHeader/serializeDoc/lookupUser/renderMarkdown  (resolveAuthor = token→git config→null)
     registerHandlers.js  registerHandlers(ipcMain,handlers,deps) — data-driven CHANNEL_MAP (10 channels)
     appProtocol.js       resolveAppPath(root,url) → file path | null (traversal-guarded; backs app:// handler)
+    navigation.js        safeExternalUrl(url) → href|null (http/https/mailto allowlist for shell.openExternal)
+    sanitize.js          createSanitize(window) → (html)→safe html (DOMPurify+injected DOM; render-markdown choke point)
     renderer.js          the block-editor UI (imports documentStore; calls window.api)
   cli/
     fields.js / interview.js / index.js   CLI front-end (inquirer → buildReadme → write)
-test/                    node:test suites (116 tests)
+test/                    node:test suites (127 tests)
 docs/superpowers/
   specs/2026-10-17-readme-generator-shared-core-design.md   ← Phase-1 design
   specs/2026-10-17-readme-generator-gui-design.md           ← GUI design (read for Phase 2)
@@ -89,7 +94,8 @@ and the save path live only in main.
 ## Commands
 - `npm start`    — launch the **GUI block editor** (`electron .`; served over app://)
 - `npm run cli`  — run the CLI (needs a real TTY)
-- `npm test`     — `node --test` (116 tests)
+- `npm test`     — `node --test` (127 tests)
+- `npm run dist` — build installers (electron-builder); `npm run pack` = unpacked smoke
 - `npm run lint` — `standard` (the commit gate)
 
 ## Gotchas / things that bit us
@@ -130,8 +136,8 @@ and the save path live only in main.
 
 ## NEXT STEPS
 
-### 🔴 HIGHEST PRIORITY — security hardening
-Progress on the two HIGH findings' defense-in-depth:
+### ✅ DONE — security hardening (all items complete)
+Defense-in-depth on the two HIGH findings, all landed:
 - ✅ **DONE (`bd5ff00`, hardened `3a59045`): Navigation lockdown** — `main.cjs`
   `will-navigate` keeps the window on `app://local` and opens off-origin links via
   `shell.openExternal`, but ONLY through the tested `safeExternalUrl` scheme allowlist
@@ -141,16 +147,14 @@ Progress on the two HIGH findings' defense-in-depth:
 - ✅ **DONE (`bd5ff00`): IPC sender validation** — `registerHandlers.isTrustedSender`
   rejects invokes whose `senderFrame` origin isn't `app://local/` before any handler
   runs (unit-tested in `test/guiWiring.test.js`).
-- 🔴 **REMAINING — Sanitize rendered markdown with DOMPurify.** `markdown-it` runs with
-  `{html:true}` (required — READMEs are HTML-rich) and its output is injected via
-  `innerHTML` in the renderer (block render + Preview). The strict CSP blocks
-  script/inline-handler execution, but DOMPurify is belt-and-suspenders against a CSP
-  gap. **Needs a decision (worth a quick brainstorm):** sanitize in MAIN inside
-  `render-markdown` (DOMPurify + jsdom) vs. in the renderer (DOMPurify browser build,
-  vendored — no bundler). Allow legitimate README HTML (div/img/a/details/headings)
-  while stripping `script`/`on*`/`meta`/`form`/`base`/`link`/`style`. New dep(s) —
-  flag for Dean (dependency-careful). The push-time security review will keep
-  re-flagging the `innerHTML` XSS surface until this lands.
+- ✅ **DONE (`824aedd`): Sanitize rendered markdown with DOMPurify (in MAIN).**
+  `src/gui/sanitize.js` `createSanitize(window)` builds a DOMPurify bound to an
+  injected DOM (jsdom in main) and is wired into the `render-markdown` IPC choke
+  point (`handlers.renderMarkdown` → `deps.sanitize(deps.md.render(md))`), so the
+  renderer never receives unsanitized HTML. Fail-closed: a missing sanitizer throws
+  (unit-tested). Config forbids `script`/`style`/`meta`/`form`/`base`/`link` + style
+  attrs while preserving README HTML (a/img/details/headings). New deps: `dompurify`,
+  `jsdom`. Branch security-reviewed clean.
 
 ### Functional deferred minors (next)
 - Manifest drop reads `files[0]` with **no size/type guard** — cap size, restrict to
@@ -162,13 +166,31 @@ Progress on the two HIGH findings' defense-in-depth:
 - `moveBlock` has no out-of-range `toIndex` guard (not reachable from the UI today).
 - `standard` `envs:["browser"]` is applied project-wide (could scope to the renderer).
 
+### ✅ DONE — packaging & distribution (CI release)
+- ✅ **DONE (`389c2bc`): electron-builder + GitHub Actions release.** `package.json`
+  `build` config (appId `com.deawar.readmegen`, output `dist/`, targets: win
+  nsis+portable, mac dmg+zip, linux AppImage+deb; GitHub publish provider,
+  `releaseType: draft`). Scripts: `npm run pack` (--dir local smoke), `npm run dist`.
+  `.github/workflows/release.yml`: on `v*` tag push (or manual dispatch), a 3-OS
+  matrix (windows/macos/ubuntu-latest) runs tests then `electron-builder --publish
+  always` on tags / `never` on manual runs. **Unsigned** (`CSC_IDENTITY_AUTO_DISCOVERY
+  =false`); `GH_TOKEN` = Actions token with `contents:write`.
+  - **To cut a release:** `git tag v1.0.0 && git push origin v1.0.0` → CI builds all
+    three OSes and attaches binaries to a **draft** release → review on the Releases
+    page and click **Publish**. Link from README via a shields.io release badge.
+  - **Known local gotcha:** `npm run pack` fails with `EPERM: rename ...win-unpacked`
+    under OneDrive (file-sync lock). Build to a non-OneDrive output
+    (`-c.directories.output=C:/Temp/...`) locally; CI runners are unaffected.
+  - **Deferred:** app icons (default Electron icon used — `application icon is not
+    set` warning); code signing (unsigned → one-time Gatekeeper/SmartScreen prompts).
+
 ### Polish / future features
-- Package/distribute the Electron app (electron-builder) — currently `npm start` only.
+- App icons + (optional) code signing for a warning-free install.
 - "Save As" (force the dialog) vs. Save-to-current-path.
 - Status-bar dirty/unsaved indicator.
 
 ## Housekeeping loose ends
-- `master` is pushed and clean (116 tests, lint clean). GitHub Dependabot may still
+- `master` is pushed and clean (127 tests, lint clean). GitHub Dependabot may still
   show stale alerts from the OLD dependency tree — verify/dismiss on the Dependabot page.
 - SDD ledgers are deleted on plan completion (git history is the record).
 - Untracked generated test READMEs may sit in the root (e.g. `Cathi-s-Portfolio.md`) —
