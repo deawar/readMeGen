@@ -11,7 +11,7 @@ import * as docOps from './docOps.js'
  * @returns {Promise<{canceled:true}|{path:string, document:object}>}
  */
 export async function openReadme (deps) {
-  const { canceled, filePaths } = deps.dialog.showOpen()
+  const { canceled, filePaths } = await deps.dialog.showOpen()
   if (canceled) return { canceled: true }
   const path = filePaths[0]
   const text = await deps.readFile(path)
@@ -31,7 +31,7 @@ export async function saveReadme (deps, { document, path } = {}) {
   const text = serializeDocument(document)
   let savePath = path
   if (!savePath) {
-    const result = deps.dialog.showSave()
+    const result = await deps.dialog.showSave()
     if (result.canceled) return { canceled: true }
     savePath = result.filePath
   }

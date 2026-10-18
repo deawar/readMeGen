@@ -1,19 +1,17 @@
+// preload.cjs
+'use strict'
+
 const { contextBridge, ipcRenderer } = require('electron')
-const path = require('path')
 
-contextBridge.exposeInMainWorld('electron', {
-  startDrag: (fileName) => {
-    ipcRenderer.send('ondragstart', path.join(process.cwd(), fileName))
-  }
-})
-
-window.addEventListener('DOMContentLoaded', () => {
-  const replaceText = (selector, text) => {
-    const element = document.getElementById(selector)
-    if (element) element.innerText = text
-  }
-
-  for (const type of ['chrome', 'node', 'electron']) {
-    replaceText(`${type}-version`, process.versions[type])
-  }
+contextBridge.exposeInMainWorld('api', {
+  openReadme: () => ipcRenderer.invoke('open-readme'),
+  saveReadme: (payload) => ipcRenderer.invoke('save-readme', payload),
+  newReadme: () => ipcRenderer.invoke('new-readme'),
+  applyManifest: (payload) => ipcRenderer.invoke('apply-manifest', payload),
+  applyAuthor: (payload) => ipcRenderer.invoke('apply-author', payload),
+  applyLicense: (payload) => ipcRenderer.invoke('apply-license', payload),
+  setHeader: (payload) => ipcRenderer.invoke('set-header', payload),
+  serializeDoc: (payload) => ipcRenderer.invoke('serialize-doc', payload),
+  lookupUser: (payload) => ipcRenderer.invoke('lookup-user', payload),
+  renderMarkdown: (payload) => ipcRenderer.invoke('render-markdown', payload)
 })

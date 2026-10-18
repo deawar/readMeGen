@@ -1,10 +1,12 @@
 // main.cjs
-const { app, BrowserWindow, ipcMain } = require('electron')
-const path = require('path')
+'use strict'
 
-// Icon used for the drag-and-drop demo. Ship this as a committed asset
-// rather than downloading it at runtime.
-const iconName = path.join(__dirname, 'iconForDragAndDrop.png')
+require('dotenv').config()
+
+const { app, BrowserWindow, ipcMain, dialog } = require('electron')
+const path = require('path')
+const { readFile, writeFile } = require('node:fs/promises')
+const { execFileSync } = require('node:child_process')
 
 function createWindow () {
   const win = new BrowserWindow({
@@ -21,21 +23,47 @@ function createWindow () {
   return win
 }
 
-app.whenReady().then(() => {
+async function onReady () {
   createWindow()
+
+  // Dynamic import of ESM modules from CJS
+  const handlers = await import('./src/gui/handlers.js')
+  const { registerHandlers } = await import('./src/gui/registerHandlers.js')
+
+  // Real dependency bag
+  const deps = {
+    dialog: {
+      showOpen () {
+        return dialog.showOpenDialog({
+          properties: ['openFile'],
+          filters: [{ name: 'Markdown', extensions: ['md'] }]
+        })
+      },
+      showSave () {
+        return dialog.showSaveDialog({ defaultPath: 'README.md' })
+      }
+    },
+    readFile: (filePath) => readFile(filePath, 'utf8'),
+    writeFile: (filePath, text) => writeFile(filePath, text, 'utf8'),
+    exec (key) {
+      return execFileSync('git', ['config', key], { encoding: 'utf8' }).trim()
+    },
+    md: new (require('markdown-it'))({ html: true, linkify: true }),
+    token: process.env.TOKEN
+  }
+
+  registerHandlers(ipcMain, handlers, deps)
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow()
     }
   })
-})
+}
 
-ipcMain.on('ondragstart', (event, filePath) => {
-  event.sender.startDrag({
-    file: path.join(__dirname, filePath),
-    icon: iconName
-  })
+app.whenReady().then(onReady).catch((err) => {
+  console.error('Failed to initialise app:', err)
+  app.quit()
 })
 
 app.on('window-all-closed', () => {
