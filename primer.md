@@ -1,152 +1,170 @@
 # ReadMeGen — Session Primer
 
-> Resume point for picking the project back up. Last updated 2026-10-17 (after Phase 2a — the GUI document engine — merged to `master`).
+> Resume point for picking the project back up. Last updated 2026-10-17 (after Phase 2b — the Electron GUI window — merged to `master`; **Phase 2 complete**).
 
 ## What this is
 A developer tool that turns project info into a complete, well-formatted
 `README.md` (styled after the othneildrew **Best-README-Template**).
-**North star:** it runs as a **CLI** *or* a **desktop (Electron) GUI**, chosen by
-the user. The CLI is a quick, windowless one-shot template filler. The GUI is a
-**WYSIWYG block editor** that also opens and edits *existing* READMEs. They share
-the generation core for "new from template" but are no longer required to produce
-identical output (parity was a Phase-1 goal, deliberately relaxed for the GUI).
+**North star (achieved):** it runs as a **CLI** *or* a **desktop (Electron) GUI**,
+chosen by the user. The CLI is a quick, windowless one-shot template filler. The
+GUI is a **WYSIWYG block editor** that also opens and edits *existing* READMEs.
+They share the generation core for "new from template" but are not required to
+produce identical output (parity was a Phase-1 goal, deliberately relaxed for the GUI).
 
 ## Status at a glance
 - **Phase 1 (CLI): DONE** — merged/pushed. All 11 catalogued bugs fixed.
-- **CLI back-navigation: DONE** — merged/pushed. Type `<` at any text prompt to
-  open a jump-list, edit earlier answers, then Continue/Generate.
+- **CLI back-navigation: DONE** — type `<` at a text prompt to open a jump-list.
 - **Phase-2 prep (`buildReadme` extraction): DONE** — shared CLI orchestration seam.
-- **Phase 2a — GUI document engine: DONE** — merged to `master` (`f3e1e56`), pushed.
-  The pure, Electron-free core the GUI needs: parse/serialize a README to an
-  editable block model and back, manifest parsing, dependency merging, and the
-  signed-in GitHub identity. **60 tests pass, `standard` lint clean. Zero new deps.**
-- **Phase 2b — the Electron window: NOT STARTED.** This is the next plan (Plan B):
-  `documentStore`, IPC handlers, `main.cjs`/`preload.cjs` wiring, and the
-  block-editor renderer. Its interfaces are now concrete because 2a exists.
-- Untracked generated test READMEs may sit in the root (e.g. `Cathi-s-Portfolio.md`)
-  — safe to delete; not source, not committed.
+- **Phase 2a — GUI document engine: DONE** — merged to `master` (`f3e1e56`). Pure,
+  Electron-free core: parse/serialize README ↔ block model, manifest parse, dep
+  merge, signed-in GitHub identity.
+- **Phase 2b — the Electron window: DONE** — merged to `master` (`850f5aa`), pushed.
+  The block-editor desktop app: open/new/edit/reorder/save a README as draggable,
+  click-to-edit blocks; manifest drop (merge+dedupe); author auto-fill; license
+  picker; Edit/Preview/Markdown tabs. **Manually verified working by Dean.**
+  **116 tests pass, `standard` lint clean. One new dep: `markdown-it` (main only).**
+- **➡️ PHASE 2 IS COMPLETE.** Both front-ends ship on the shared core. Remaining
+  work is hardening/polish — see NEXT STEPS (security first).
 
-## The GUI model (decided in brainstorming, built in 2a)
+## The GUI model (built in 2a, wired in 2b)
 The README is a **document**: `Document = { meta, blocks }`.
-- `meta = { projectUrl, linkedin, conCov, tableOfContents }` — the minimal
-  structured facts the regenerated scaffolding needs. **Author/license/builtWith are
-  NOT in meta** — they live in block bodies (a deliberate ruling, see below).
+- `meta = { projectUrl, linkedin, conCov, tableOfContents }` — minimal structured
+  facts the regenerated scaffolding needs. **Author/license/builtWith are NOT in
+  meta** — they live in block bodies (deliberate ruling, see Decisions).
 - `Block = { id, type, heading, level, body }`. One block ≈ one section. `type` is a
-  non-binding hint (drives smart assists); unknown sections are `type:'custom'` and
-  stay fully editable.
+  non-binding hint (drives smart assists); unknown sections are `type:'custom'`.
 - **Managed elements** (top shields, bottom reference-link defs, back-to-top links,
-  the TOC, `<!-- SECTION -->` banners) are lifted out on parse and *regenerated* on
-  serialize from `meta` + the live block set — so reordering/deleting a section can
-  never strand a dead badge. Scaffolding that doesn't match the known shape is
-  preserved verbatim as body (never guessed).
+  TOC, `<!-- SECTION -->` banners) are lifted out on parse and *regenerated* on
+  serialize — so reordering/deleting a section can't strand a dead badge. Unknown
+  scaffolding is preserved verbatim as body.
 - Editing feel is **Option B**: every block renders; click one to reveal *its*
-  markdown (edits render live); the `header` block is the one exception (structured
-  fields, not raw markdown, because it's generated HTML + shields).
+  markdown; the `header` block is edited via structured fields.
 
 ## How it's built (architecture)
-One **ESM** package (`"type": "module"`) at the repo root. Thin front-ends on a
-pure core:
+One **ESM** package (`"type": "module"`). Pure core + two front-ends (CLI + Electron GUI).
 
 ```
-main.cjs / preload.cjs   Electron shell (CommonJS; still the drag-demo placeholder — Phase 2b)
-index.html               Electron window (still the drag-demo placeholder)
+main.cjs / preload.cjs   Electron shell (CommonJS). main.cjs registers the app:// scheme,
+                         dynamic-imports the ESM handlers, builds real deps (dialog, fs, git,
+                         markdown-it, token, pathState), registerHandlers(ipcMain,...).
+                         preload.cjs: contextBridge window.api over ipcRenderer.invoke.
+index.html               the GUI shell: strict CSP, toolbar/tabs/#canvas, loads renderer.js (module).
 src/
-  core/
+  core/                  (PURE, Electron-free, shared by CLI + GUI)
     licenses.js          licenseInfo(key) → {key,name,spdx,description}
-    managed.js           shared template scaffolding: emitShields/emitRefs/emitToc,
-                         BACK_TO_TOP, KNOWN_SECTIONS, slug  (used by generateReadme AND blocks)
-    generateReadme.js    generateReadme(answers) → string  (PURE); also parseRepo(url)→{owner,repo}
+    managed.js           emitShields/emitRefs/emitToc, BACK_TO_TOP, KNOWN_SECTIONS, slug
+    generateReadme.js    generateReadme(answers) → string; also parseRepo(url)→{owner,repo}
     buildReadme.js       buildReadme(rawAnswers,{lookup}) → {markdown,answers}  (CLI orchestration)
     blocks.js            parseDocument(md) → {meta,blocks};  serializeDocument(doc) → md
-                         (THE engine; byte-for-byte round-trip of our own template)
     parseManifest.js     parseManifest(filename,contents) → {builtWith,modules,devModules}
-    applyManifest.js     applyManifest(document,parsed) → document  (merge + dedupe, create-if-missing)
+    applyManifest.js     applyManifest(document,parsed) → document  (merge + dedupe)
   github/
     fetchGitHubUser.js        fetchGitHubUser(username,{token,client}) → {ok,user}|{ok:false,reason}
-    fetchAuthenticatedUser.js fetchAuthenticatedUser({token,client}) → {ok,user}|{ok:false,reason:'no_token'|'unreachable'}
+    fetchAuthenticatedUser.js fetchAuthenticatedUser({token,client}) → {ok,user}|{ok:false,reason}
+  gui/                   (Phase 2b)
+    documentStore.js     renderer-side immutable block ops (blockById/move/insert/delete/updateBody/setMeta) — NO imports
+    docOps.js            main-side pure transforms: newDocument, applyManifestToDoc, render{Contact,License}Body,
+                         parseHeaderFields/renderHeaderBody, apply{Author,License,Header}ToDoc
+    handlers.js          IPC handlers (injected deps): open/save/new/applyManifest/apply{Author,License}/
+                         setHeader/serializeDoc/lookupUser/renderMarkdown  (resolveAuthor = token→git config→null)
+    registerHandlers.js  registerHandlers(ipcMain,handlers,deps) — data-driven CHANNEL_MAP (10 channels)
+    appProtocol.js       resolveAppPath(root,url) → file path | null (traversal-guarded; backs app:// handler)
+    renderer.js          the block-editor UI (imports documentStore; calls window.api)
   cli/
-    fields.js / interview.js / index.js   the CLI front-end (inquirer-backed io → buildReadme → write)
-test/                    node:test suites + fixtures (full-answers.js, expected-full.md golden)
+    fields.js / interview.js / index.js   CLI front-end (inquirer → buildReadme → write)
+test/                    node:test suites (116 tests)
 docs/superpowers/
   specs/2026-10-17-readme-generator-shared-core-design.md   ← Phase-1 design
-  specs/2026-10-17-readme-generator-gui-design.md           ← GUI design (READ THIS for Phase 2)
+  specs/2026-10-17-readme-generator-gui-design.md           ← GUI design (read for Phase 2)
   plans/2026-10-17-gui-document-engine.md                   ← Phase-2a plan (done)
-Example_README.md        the Best-README-Template sample = canonical format + round-trip fixture
+  plans/2026-10-17-gui-electron-shell.md                    ← Phase-2b plan (done)
+Example_README.md        Best-README-Template sample = canonical format + round-trip fixture
 ```
 
+**IPC boundary:** renderer holds the live `Document`, does structural edits with
+`documentStore` (local, no IPC), and calls `window.api` for anything touching the
+engine/fs/network/markdown. `main.cjs` dynamic-imports the engine; the GitHub token
+and the save path live only in main.
+
 ## Commands
-- `npm run cli`  — run the CLI (needs a real terminal; inquirer requires a TTY)
-- `npm test`     — `node --test` (60 tests)
-- `npm run lint` — `standard` (the gate; must be clean to commit)
-- `npm start`    — launch the Electron shell (still the leftover drag-demo window)
+- `npm start`    — launch the **GUI block editor** (`electron .`; served over app://)
+- `npm run cli`  — run the CLI (needs a real TTY)
+- `npm test`     — `node --test` (116 tests)
+- `npm run lint` — `standard` (the commit gate)
 
 ## Gotchas / things that bit us
+- **ES modules do NOT load over `file://` in Electron** (Chromium CORS, origin
+  `null`). The GUI is therefore served over a privileged **`app://`** scheme
+  (`protocol.registerSchemesAsPrivileged` at module top level + `protocol.handle` in
+  `onReady` + `win.loadURL('app://local/index.html')`). If the window renders blank,
+  this is the first suspect. `resolveAppPath` (appProtocol.js) maps + traversal-guards.
+- **Tab panes defaulted to `display:none` in CSS** — showing a pane must set an
+  explicit `display` ('block'/'flex'), NOT `''` (which falls back to the CSS none).
+  (Bit us: Preview/Markdown blank.)
+- **Save path is main-owned** (`pathState`) — the renderer must NEVER send a path to
+  `save-readme`; `newReadme` clears it so New→Save can't overwrite the opened file.
+- **markdown-it runs in MAIN only** (`render-markdown` IPC) — no markdown lib / bundler
+  in the renderer; rendered HTML is injected under the strict CSP.
 - **The keystone invariant:** `serializeDocument(parseDocument(generateReadme(x)))`
-  must equal `generateReadme(x)` **byte-for-byte**. If a blocks.js change breaks it,
-  fix parse/serialize — never the golden fixture.
-- **Managed-key set is derived from `managed.js`** (`emitRefs`/`emitShields`) at load
-  time, so `parseDocument` strips only OUR shield/ref keys and preserves all other
-  `[label]:` defs + badges as body. Don't hardcode that key list — it would drift.
-- **ESM vs CJS:** package is `type: module`; `src/**` are ESM. The Electron shell is
-  CommonJS. From `main.cjs`, import the ESM core with **dynamic import**:
-  `const { parseDocument } = await import('./src/core/blocks.js')`.
-- **GitHub token stays in the main process** — never the renderer (Phase 2b rule).
-- **`standard` is the lint gate** — trailing whitespace, `padded-blocks`, single
-  quotes (double only to avoid escaping), `new Error()` not thrown literals.
-  SonarLint IDE warnings (S7778/S6594/S3776) are advisory only, not the gate.
-- **GitHub auth:** works unauthenticated (60 req/hr); a token in `.env` as `TOKEN=`
-  raises it to 5000/hr and enables email. Header `Authorization: Bearer <token>`,
-  sent only when a token is present.
+  must equal `generateReadme(x)` byte-for-byte. Fix parse/serialize, never the golden.
+- **Managed-key set derived from `managed.js`** so `parseDocument` strips only OUR
+  shield/ref keys and preserves other `[label]:` defs/badges as body (don't hardcode).
+- **ESM vs CJS:** `src/**` ESM; Electron shell CJS; from CJS use dynamic `import()`.
+- **`standard` lint gate** — trailing whitespace, padded-blocks, single quotes,
+  `new Error()` not literals. SonarLint IDE warnings are advisory, not the gate.
+- **GitHub auth:** unauthenticated 60 req/hr; token in `.env` as `TOKEN=` → 5000/hr +
+  email; `Authorization: Bearer <token>` only when present; token stays in main.
 
 ## Decisions worth remembering
-- **GUI = block editor, not a form.** Opens existing READMEs (its killer feature);
-  save re-renders to clean markdown, normalizing exotic formatting — **clean blocks
-  beat byte-exact fidelity**, but a section's *content* is never dropped.
-- **`meta` minimal ruling (Phase 2a):** author/license/builtWith live in block
-  bodies, not `meta`; smart assists regenerate a block body at assist-time so the
-  serializer never clobbers hand-edits. (Refines design §4.1.)
-- **Manifest drop = merge + dedupe** (Dean's call, design §8): new deps appended,
-  existing/hand-added ones preserved, dedupe by package name.
-- **Smart assists:** author auto-fill → authenticated GitHub user (token) → `git
-  config` fallback → editable placeholder; license picker → `meta.license`; manifest
-  drop → dependency/Built-With blocks (created in canonical position if missing).
-- Phase-1 decisions still hold: Best-README-Template structure; kept Testing /
-  Dependencies / Dev-Dependencies / Contributor Covenant; Questions merged into
-  Contact; per-section prose toggles; `owner/repo` from `projectUrl`, links use
-  `HEAD`; offline author lookup → manual fallback.
+- **GUI = block editor, not a form.** Opens existing READMEs; save normalizes exotic
+  formatting — clean blocks beat byte-exact fidelity, but a section's content is never dropped.
+- **`meta` minimal:** author/license/builtWith live in block bodies, not `meta`; assists
+  regenerate a block body at assist-time so the serializer never clobbers hand-edits.
+- **Manifest drop = merge + dedupe** (new appended, existing/hand-added preserved, by name).
+- **GUI served over app:// scheme**; engine owned by main; renderer imports only `documentStore`.
+- **Security posture:** path traversal closed (main-owned path); XSS mitigated by the
+  strict CSP (`script-src 'self'`, no `unsafe-inline`). DOMPurify + senderFrame validation
+  were deliberately DEFERRED (see NEXT STEPS).
+- Phase-1 decisions still hold (Best-README-Template structure; Testing/Deps/DevDeps/
+  Contributor-Covenant; Questions→Contact; per-section prose toggles; `HEAD` links).
 
-## NEXT STEPS — Phase 2b: the Electron window (Plan B)
-The engine is done and proven. Plan B is pure front-end on top of it. **The GUI's
-job: open/new a `Document` → edit blocks (click-to-reveal-markdown, drag-reorder,
-add/delete) → save via `serializeDocument`.** Likely task shape:
+## NEXT STEPS
 
-1. **`documentStore` (pure, TDD):** block-array operations on `Document` —
-   moveBlock, insertBlock, deleteBlock, updateBlockBody, setMeta. Testable without a DOM.
-2. **IPC handlers (`src/gui/handlers.js`, TDD with injected deps):** `open-readme`
-   (dialog → read → `parseDocument` → `{path, document}`), `save-readme`
-   (`serializeDocument` → dialog/write), `new-readme` (`buildReadme` defaults →
-   `parseDocument`), `resolve-author`, `parse-manifest`, `lookup-user`. All I/O +
-   token behind `invoke`.
-3. **`main.cjs`:** `ipcMain.handle(...)` wiring; dynamic-import the ESM core; native
-   dialogs; `git config` author fallback. Remove the drag demo.
-4. **`preload.cjs`:** `contextBridge` API over `ipcRenderer.invoke`; keep
-   `contextIsolation: true`, `nodeIntegration: false`. Remove the drag demo.
-5. **Renderer (`index.html` + `renderer.js`):** the block canvas — render blocks,
-   Option-B click-to-edit, drag-reorder, add/delete, Edit/Preview/Markdown tabs,
-   manifest drop, structured `header` editor. The markdown-render dependency
-   (lean: `markdown-it`) and drag-and-drop land here (design §4.7 — the one dep
-   addition flagged for Dean).
+### 🔴 HIGHEST PRIORITY — security hardening (deferred from 2b; do these first)
+The two HIGH findings from the automated review were mitigated but not maximally
+hardened. Close the defense-in-depth gaps before adding features:
+1. **Sanitize rendered markdown with DOMPurify.** `markdown-it` runs with `{html:true}`
+   (required — READMEs are HTML-rich), and its output is injected via `innerHTML` in
+   the renderer (block render + Preview). The strict CSP blocks script/inline-handler
+   execution, but DOMPurify is belt-and-suspenders against a CSP gap. Decide where it
+   runs: cleanest is sanitizing in MAIN inside `render-markdown` (needs DOMPurify +
+   jsdom), or in the renderer (DOMPurify browser build, vendored — no bundler). Allow
+   the README's legitimate HTML (div/img/a/details/headings) while stripping
+   `script`/`on*`. New dep(s) — flag for Dean (he was dependency-careful).
+2. **Validate `event.senderFrame` in the IPC handlers / registerHandlers.** Reject
+   invokes that don't originate from our own `app://local` window, so a hypothetical
+   compromised/injected frame can't drive the privileged channels. Cheap; add in
+   `registerHandlers` (keep the pure handler fns + their tests intact).
 
-Open design calls still to settle in Plan B: renderer framework/markdown lib
-(design §4.7 — leaning vanilla + `markdown-it`), exact IPC payload/error shapes,
-the known-section heading→type table contents, and the structured `header` editor UI.
+### Functional deferred minors (next)
+- Manifest drop reads `files[0]` with **no size/type guard** — cap size, restrict to
+  `package.json`/`requirements*.txt`.
+- `resolveAuthor` loses the name if `git config user.email` is unset (resolve each key
+  independently).
+- **Live rendered preview while editing** a block — currently shows markdown source
+  until blur (Option B). Reconcile with design §4.8 "edits render live" if desired.
+- `moveBlock` has no out-of-range `toIndex` guard (not reachable from the UI today).
+- `standard` `envs:["browser"]` is applied project-wide (could scope to the renderer).
+
+### Polish / future features
+- Package/distribute the Electron app (electron-builder) — currently `npm start` only.
+- "Save As" (force the dialog) vs. Save-to-current-path.
+- Status-bar dirty/unsaved indicator.
 
 ## Housekeeping loose ends
-- `master` is pushed and clean. GitHub Dependabot may still show stale alerts from
-  the *old* dependency tree — verify/dismiss on the Dependabot page if it lingers.
+- `master` is pushed and clean (116 tests, lint clean). GitHub Dependabot may still
+  show stale alerts from the OLD dependency tree — verify/dismiss on the Dependabot page.
 - SDD ledgers are deleted on plan completion (git history is the record).
-- Deferred minors from 2a (non-blocking, for 2b/hardening): latent `!inDetails`
-  fence-ordering edge; non-contiguous (still-unique) block ids; best-effort
-  `projectUrl` recovery; untested `;` env-markers in requirements parsing; a couple
-  of narrow-assertion tests; banner-drop regex matches only all-caps HTML comments.
+- Untracked generated test READMEs may sit in the root (e.g. `Cathi-s-Portfolio.md`) —
+  safe to delete; not source.
 ```
