@@ -52,6 +52,7 @@ async function onReady () {
   // first loadURL call resolves correctly.
   const { resolveAppPath } = await import('./src/gui/appProtocol.js')
   safeExternalUrl = (await import('./src/gui/navigation.js')).safeExternalUrl
+  const { createSanitize } = await import('./src/gui/sanitize.js')
   protocol.handle('app', (request) => {
     const filePath = resolveAppPath(__dirname, request.url)
     if (!filePath) return new Response('Forbidden', { status: 403 })
@@ -86,6 +87,7 @@ async function onReady () {
       return execFileSync('git', ['config', key], { encoding: 'utf8', shell: false }).trim()
     },
     md: new (require('markdown-it'))({ html: true, linkify: true }),
+    sanitize: createSanitize(new (require('jsdom').JSDOM)('').window),
     token: process.env.TOKEN,
     pathState
   }
