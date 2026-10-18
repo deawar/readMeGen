@@ -24,7 +24,7 @@ produce identical output (parity was a Phase-1 goal, deliberately relaxed for th
   The block-editor desktop app: open/new/edit/reorder/save a README as draggable,
   click-to-edit blocks; manifest drop (merge+dedupe); author auto-fill; license
   picker; Edit/Preview/Markdown tabs. **Manually verified working by Dean.**
-  **127 tests pass, `standard` lint clean. Runtime deps: `markdown-it`, `dompurify`,
+  **133 tests pass, `standard` lint clean. Runtime deps: `markdown-it`, `dompurify`,
   `jsdom` (all main-only). Dev: `electron-builder` (packaging).**
 - **➡️ PHASE 2 IS COMPLETE.** Both front-ends ship on the shared core. Remaining
   work is hardening/polish — see NEXT STEPS (security first).
@@ -77,7 +77,7 @@ src/
     renderer.js          the block-editor UI (imports documentStore; calls window.api)
   cli/
     fields.js / interview.js / index.js   CLI front-end (inquirer → buildReadme → write)
-test/                    node:test suites (127 tests)
+test/                    node:test suites (133 tests)
 docs/superpowers/
   specs/2026-10-17-readme-generator-shared-core-design.md   ← Phase-1 design
   specs/2026-10-17-readme-generator-gui-design.md           ← GUI design (read for Phase 2)
@@ -94,7 +94,7 @@ and the save path live only in main.
 ## Commands
 - `npm start`    — launch the **GUI block editor** (`electron .`; served over app://)
 - `npm run cli`  — run the CLI (needs a real TTY)
-- `npm test`     — `node --test` (127 tests)
+- `npm test`     — `node --test` (133 tests)
 - `npm run dist` — build installers (electron-builder); `npm run pack` = unpacked smoke
 - `npm run lint` — `standard` (the commit gate)
 
@@ -156,15 +156,15 @@ Defense-in-depth on the two HIGH findings, all landed:
   attrs while preserving README HTML (a/img/details/headings). New deps: `dompurify`,
   `jsdom`. Branch security-reviewed clean.
 
-### Functional deferred minors (next)
-- Manifest drop reads `files[0]` with **no size/type guard** — cap size, restrict to
-  `package.json`/`requirements*.txt`.
-- `resolveAuthor` loses the name if `git config user.email` is unset (resolve each key
-  independently).
-- **Live rendered preview while editing** a block — currently shows markdown source
-  until blur (Option B). Reconcile with design §4.8 "edits render live" if desired.
-- `moveBlock` has no out-of-range `toIndex` guard (not reachable from the UI today).
-- `standard` `envs:["browser"]` is applied project-wide (could scope to the renderer).
+### Functional deferred minors
+- ✅ **DONE (`87059bc`):** manifest drop name/size guard (parseManifest accepts only
+  `package.json`/`requirements*.txt`; applyManifest rejects >1 MB; renderer pre-checks);
+  `resolveAuthor` resolves `user.name`/`user.email` independently; `moveBlock` clamps
+  `toIndex` to `[0, length]`; `browser` eslint env scoped to renderer.js (not project-wide).
+- 🟡 **REMAINING (design decision): live rendered preview while editing** a block —
+  currently shows markdown source until blur (deliberate **Option B**). Reconcile with
+  design §4.8 "edits render live" **only if desired** — it changes the editing feel and
+  the Option B ruling, so it's Dean's call, not a mechanical fix.
 
 ### ✅ DONE — packaging & distribution (CI release)
 - ✅ **DONE (`389c2bc`): electron-builder + GitHub Actions release.** `package.json`
@@ -194,7 +194,7 @@ Defense-in-depth on the two HIGH findings, all landed:
 - Status-bar dirty/unsaved indicator.
 
 ## Housekeeping loose ends
-- `master` is pushed and clean (127 tests, lint clean). GitHub Dependabot may still
+- `master` is pushed and clean (133 tests, lint clean). GitHub Dependabot may still
   show stale alerts from the OLD dependency tree — verify/dismiss on the Dependabot page.
 - SDD ledgers are deleted on plan completion (git history is the record).
 - Untracked generated test READMEs may sit in the root (e.g. `Cathi-s-Portfolio.md`) —
