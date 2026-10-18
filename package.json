@@ -10,7 +10,8 @@
     "lint": "standard",
     "test": "node --test",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "icons": "node scripts/make-icons.mjs"
   },
   "repository": {
     "type": "git",
@@ -32,6 +33,8 @@
   "devDependencies": {
     "electron": "^44.0.0",
     "electron-builder": "^26.15.3",
+    "png2icons": "^2.0.1",
+    "pureimage": "^0.4.20",
     "standard": "^17.0.0"
   },
   "standard": {
