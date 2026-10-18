@@ -3,7 +3,7 @@
 
 require('dotenv').config()
 
-const { app, BrowserWindow, ipcMain, dialog, protocol, net } = require('electron')
+const { app, BrowserWindow, ipcMain, dialog, protocol, net, shell } = require('electron')
 const path = require('node:path')
 const { pathToFileURL } = require('node:url')
 const { readFile, writeFile } = require('node:fs/promises')
@@ -25,6 +25,17 @@ function createWindow () {
       nodeIntegration: false
     }
   })
+
+  // Lock navigation to our own app://local origin. A link in an untrusted
+  // README must never navigate the window to a remote page (where rendered
+  // HTML would run outside our CSP/origin); open such links externally instead.
+  win.webContents.on('will-navigate', (e, url) => {
+    if (!url.startsWith('app://local/')) {
+      e.preventDefault()
+      shell.openExternal(url).catch(() => {})
+    }
+  })
+  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
 
   win.loadURL('app://local/index.html').catch((err) => {
     console.error('loadURL failed:', err)

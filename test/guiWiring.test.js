@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { registerHandlers } from '../src/gui/registerHandlers.js'
+import { registerHandlers, isTrustedSender } from '../src/gui/registerHandlers.js'
 import * as handlers from '../src/gui/handlers.js'
 
 // ── fake ipcMain ──────────────────────────────────────────────────────────────
@@ -77,6 +77,32 @@ test('each registered handler invokes the corresponding handler fn with deps and
   const fakeMdDeps = { md: { render: (s) => '<b>' + s + '</b>' } }
   registerHandlers(fakeIpcMain, handlers, fakeMdDeps)
   const entry2 = fakeIpcMain._registered.filter(r => r.channel === 'render-markdown').pop()
-  const result = await entry2.fn({}, { markdown: 'hi' })
+  const trusted = { senderFrame: { url: 'app://local/index.html' } }
+  const result = await entry2.fn(trusted, { markdown: 'hi' })
   assert.deepEqual(result, { html: '<b>hi</b>' })
+})
+
+// ── senderFrame origin guard ────────────────────────────────────────────────
+
+test('isTrustedSender accepts only app://local frames', () => {
+  assert.equal(isTrustedSender({ senderFrame: { url: 'app://local/index.html' } }), true)
+  assert.equal(isTrustedSender({ senderFrame: { url: 'app://local/src/gui/renderer.js' } }), true)
+  assert.equal(isTrustedSender({ senderFrame: { url: 'https://evil.example/' } }), false)
+  assert.equal(isTrustedSender({ senderFrame: { url: 'file:///etc/passwd' } }), false)
+  assert.equal(isTrustedSender({ senderFrame: {} }), false)
+  assert.equal(isTrustedSender({}), false)
+  assert.equal(isTrustedSender(undefined), false)
+})
+
+test('a registered handler rejects an invoke from an untrusted sender and does not run the handler', () => {
+  const fakeIpcMain = makeFakeIpcMain()
+  // deps with NO md — if the guard fails to fire, renderMarkdown would throw a
+  // different error (reading md.render of undefined). We assert the guard fires
+  // first (synchronous throw — Electron turns it into a rejected invoke()).
+  registerHandlers(fakeIpcMain, handlers, {})
+  const entry = fakeIpcMain._registered.find(r => r.channel === 'render-markdown')
+  assert.throws(
+    () => entry.fn({ senderFrame: { url: 'https://evil.example/' } }, { markdown: 'x' }),
+    /untrusted sender/
+  )
 })

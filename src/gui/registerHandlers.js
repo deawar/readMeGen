@@ -16,9 +16,25 @@ const CHANNEL_MAP = [
   ['render-markdown', 'renderMarkdown']
 ]
 
+// The only origin our privileged channels accept invokes from — the app's own
+// renderer window (served over the app:// scheme). Anything else is rejected.
+const TRUSTED_PREFIX = 'app://local/'
+
+/**
+ * True only when an IPC event originates from our own app://local renderer.
+ * Guards the privileged channels so a hypothetical injected/other frame can't
+ * drive them.
+ * @param {object} event - the ipcMain.handle event (or a test double)
+ */
+export function isTrustedSender (event) {
+  const url = event?.senderFrame?.url
+  return typeof url === 'string' && url.startsWith(TRUSTED_PREFIX)
+}
+
 /**
  * Register one ipcMain.handle per channel, forwarding (deps, payload) to
- * the matching handler function.
+ * the matching handler function — but only for invokes from the trusted
+ * app://local frame.
  *
  * @param {object} ipcMain  - Electron ipcMain (or a test double)
  * @param {object} handlers - Module object with the handler functions
@@ -26,7 +42,12 @@ const CHANNEL_MAP = [
  */
 export function registerHandlers (ipcMain, handlers, deps) {
   for (const [channel, fnName] of CHANNEL_MAP) {
-    ipcMain.handle(channel, (_event, payload) => handlers[fnName](deps, payload))
+    ipcMain.handle(channel, (event, payload) => {
+      if (!isTrustedSender(event)) {
+        throw new Error('ipc: rejected invoke from untrusted sender on ' + channel)
+      }
+      return handlers[fnName](deps, payload)
+    })
   }
 }
 
