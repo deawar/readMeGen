@@ -181,11 +181,15 @@ Defense-in-depth on the two HIGH findings, all landed:
   - **Known local gotcha:** `npm run pack` fails with `EPERM: rename ...win-unpacked`
     under OneDrive (file-sync lock). Build to a non-OneDrive output
     (`-c.directories.output=C:/Temp/...`) locally; CI runners are unaffected.
-  - **Deferred:** app icons (default Electron icon used — `application icon is not
-    set` warning); code signing (unsigned → one-time Gatekeeper/SmartScreen prompts).
+  - ✅ **App icons DONE (`364d139`):** branded icon (indigo→violet squircle +
+    white Markdown mark). `scripts/make-icons.mjs` (pure-JS pureimage + png2icons,
+    dev-only) generates `build/icon.{png,ico,icns}` — committed, auto-detected by
+    electron-builder from buildResources. Regenerate with `npm run icons`. No more
+    "default Electron icon" warning.
+  - **Deferred:** code signing (unsigned → one-time Gatekeeper/SmartScreen prompts).
 
 ### Polish / future features
-- App icons + (optional) code signing for a warning-free install.
+- (optional) code signing for a warning-free install.
 - "Save As" (force the dialog) vs. Save-to-current-path.
 - Status-bar dirty/unsaved indicator.
 
