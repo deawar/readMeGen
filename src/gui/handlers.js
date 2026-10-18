@@ -83,8 +83,8 @@ export async function resolveAuthor (deps) {
   }
 
   try {
-    const name = deps.exec('git config user.name').trim()
-    const email = deps.exec('git config user.email').trim()
+    const name = deps.exec('user.name').trim()
+    const email = deps.exec('user.email').trim()
     if (name) {
       return {
         user: {

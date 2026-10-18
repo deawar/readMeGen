@@ -155,11 +155,17 @@ test('resolveAuthor falls back to null when no token and git config empty', asyn
   assert.deepEqual(result, { user: null })
 })
 
-test('resolveAuthor returns user from git config when no token', async () => {
+test('resolveAuthor passes bare keys to exec dep (contract-pinning)', async () => {
+  // This test pins the contract between handlers.js and main.cjs's exec dep.
+  // main.cjs builds exec as: exec(key) => execFileSync('git', ['config', key], ...)
+  // So handlers.js MUST call exec('user.name') and exec('user.email') — bare keys only.
+  // If the handler ever reverts to 'git config user.name', this test turns RED.
+  const execArgs = []
   const deps = makeDeps({
-    exec: (cmd) => {
-      if (cmd === 'git config user.name') return 'Test User'
-      if (cmd === 'git config user.email') return 'test@example.com'
+    exec: (arg) => {
+      execArgs.push(arg)
+      if (arg === 'user.name') return 'Test User'
+      if (arg === 'user.email') return 'test@example.com'
       return ''
     }
   })
@@ -168,6 +174,10 @@ test('resolveAuthor returns user from git config when no token', async () => {
   assert.equal(result.user.name, 'Test User')
   assert.equal(result.user.email, 'test@example.com')
   assert.equal(result.user.login, '')
+  // Contract: bare keys must be passed, never the full 'git config ...' string
+  assert.ok(execArgs.includes('user.name'), 'exec called with bare key "user.name"')
+  assert.ok(execArgs.includes('user.email'), 'exec called with bare key "user.email"')
+  assert.ok(!execArgs.some(a => a.startsWith('git config')), 'exec never called with "git config ..." prefix')
 })
 
 test('resolveAuthor uses token when provided', async () => {
