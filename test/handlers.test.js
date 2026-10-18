@@ -377,3 +377,8 @@ test('renderMarkdown passes rendered html through the injected sanitizer', async
   const result = await renderMarkdown(deps, { markdown: 'hi' })
   assert.deepEqual(result, { html: '<p>hi</p>' })
 })
+
+test('renderMarkdown fails closed when the sanitizer is unwired (no raw passthrough)', async () => {
+  const deps = makeDeps({ sanitize: undefined })
+  await assert.rejects(() => renderMarkdown(deps, { markdown: 'hi' }))
+})

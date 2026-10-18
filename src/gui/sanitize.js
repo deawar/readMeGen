@@ -12,6 +12,9 @@ import createDOMPurify from 'dompurify'
 // legitimate structural/formatting HTML a README uses and forbid the sinks that
 // could execute code or rewrite the page. DOMPurify already drops `on*`
 // handlers and javascript: URLs by default; these are the explicit extras.
+// `data:` image URIs survive on <img src> (CSP img-src allows data:). That is
+// intentional and not an XSS vector: an SVG loaded via <img> runs in image mode
+// and cannot execute scripts. Revisit only if SVG is ever injected inline.
 export const SANITIZE_CONFIG = {
   FORBID_TAGS: ['script', 'style', 'meta', 'form', 'base', 'link'],
   FORBID_ATTR: ['style']
