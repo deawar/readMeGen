@@ -3,6 +3,7 @@
  * ESM module; runs in the Electron renderer (browser context).
  * No Node APIs, no require. All IPC via window.api.
  */
+/* eslint-env browser */
 
 import {
   moveBlock,
@@ -517,6 +518,20 @@ canvas.addEventListener('drop', (e) => {
   e.preventDefault()
 
   const file = files[0]
+
+  // Guard before reading: only accept a manifest by name, and cap the size so a
+  // huge dropped file isn't read wholesale. (Main re-checks both authoritatively.)
+  const isManifestName = /^package\.json$/i.test(file.name) ||
+    /^requirements[\w-]*\.txt$/i.test(file.name)
+  if (!isManifestName) {
+    setStatus('Drop a package.json or requirements*.txt (got ' + file.name + ')', 'error')
+    return
+  }
+  if (file.size > 1000000) {
+    setStatus('Manifest too large (max 1 MB): ' + file.name, 'error')
+    return
+  }
+
   const reader = new FileReader()
   reader.addEventListener('load', async (evt) => {
     const contents = evt.target.result

@@ -3,6 +3,10 @@ import { fetchAuthenticatedUser } from '../github/fetchAuthenticatedUser.js'
 import { fetchGitHubUser } from '../github/fetchGitHubUser.js'
 import * as docOps from './docOps.js'
 
+// A real package.json / requirements.txt is small; cap the accepted size so a
+// dropped file can't be read wholesale into memory. 1 MB is generous.
+const MAX_MANIFEST_BYTES = 1_000_000
+
 // ── openReadme ────────────────────────────────────────────────────────────────
 
 /**
@@ -72,6 +76,9 @@ export async function newReadme (deps) {
  * @returns {Promise<{document:object}|{document:object, error:string}>}
  */
 export async function applyManifest (deps, { document, filename, contents }) {
+  if (typeof contents === 'string' && contents.length > MAX_MANIFEST_BYTES) {
+    return { document, error: 'manifest too large' }
+  }
   try {
     const updated = docOps.applyManifestToDoc(document, filename, contents)
     return { document: updated }
@@ -94,25 +101,37 @@ export async function resolveAuthor (deps) {
     if (result.ok) return { user: result.user }
   }
 
-  try {
-    const name = deps.exec('user.name').trim()
-    const email = deps.exec('user.email').trim()
-    if (name) {
-      return {
-        user: {
-          login: '',
-          name,
-          email,
-          html_url: '',
-          avatar_url: ''
-        }
+  // Resolve each key independently: `git config user.email` exits non-zero
+  // (exec throws) when unset, which must not discard a present user.name.
+  const name = gitConfig(deps, 'user.name')
+  const email = gitConfig(deps, 'user.email')
+  if (name) {
+    return {
+      user: {
+        login: '',
+        name,
+        email,
+        html_url: '',
+        avatar_url: ''
       }
     }
-  } catch {
-    // git config unavailable — fall through
   }
 
   return { user: null }
+}
+
+/**
+ * Read a single git config key via the injected exec dep; '' if unavailable.
+ * @param {object} deps
+ * @param {string} key
+ * @returns {string}
+ */
+function gitConfig (deps, key) {
+  try {
+    return deps.exec(key).trim()
+  } catch {
+    return ''
+  }
 }
 
 // ── applyAuthor ───────────────────────────────────────────────────────────────

@@ -26,13 +26,16 @@ export function blockById (doc, id) {
  */
 export function moveBlock (doc, id, toIndex) {
   const fromIndex = doc.blocks.findIndex(b => b.id === id)
+  // Clamp to [0, length] so an out-of-range drop target lands at the front or
+  // end instead of at a negative offset. (length = append to end.)
+  const target = Math.max(0, Math.min(toIndex, doc.blocks.length))
 
-  if (fromIndex === -1 || fromIndex === toIndex) {
+  if (fromIndex === -1 || fromIndex === target) {
     return { ...doc, blocks: doc.blocks.slice() }
   }
 
   const without = [...doc.blocks.slice(0, fromIndex), ...doc.blocks.slice(fromIndex + 1)]
-  const insertAt = fromIndex < toIndex ? toIndex - 1 : toIndex
+  const insertAt = fromIndex < target ? target - 1 : target
   const blocks = [...without.slice(0, insertAt), doc.blocks[fromIndex], ...without.slice(insertAt)]
 
   return { ...doc, blocks }

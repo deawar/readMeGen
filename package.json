@@ -37,11 +37,6 @@
     "pureimage": "^0.4.20",
     "standard": "^17.0.0"
   },
-  "standard": {
-    "envs": [
-      "browser"
-    ]
-  },
   "build": {
     "appId": "com.deawar.readmegen",
     "productName": "readMeGen",

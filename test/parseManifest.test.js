@@ -34,3 +34,15 @@ test('parseManifest throws on an unsupported filename', () => {
     new Error('unsupported manifest: Gemfile')
   )
 })
+
+test('parseManifest rejects a generic .txt that is not a requirements file', () => {
+  assert.throws(
+    () => parseManifest('notes.txt', 'just some notes'),
+    /unsupported manifest/
+  )
+})
+
+test('parseManifest accepts requirements*.txt variants (e.g. requirements-dev.txt)', () => {
+  const result = parseManifest('requirements-dev.txt', 'pytest==7.0\n')
+  assert.deepEqual(result.modules, ['pytest'])
+})

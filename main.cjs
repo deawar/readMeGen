@@ -1,6 +1,8 @@
 // main.cjs
 'use strict'
 
+/* global Response */ // web Response global (Electron main / Node 18+), for the app:// protocol handler
+
 require('dotenv').config()
 
 const { app, BrowserWindow, ipcMain, dialog, protocol, net, shell } = require('electron')

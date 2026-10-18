@@ -202,3 +202,22 @@ test('moveBlock upward: block lands at the target slot', () => {
   assert.deepEqual(ids, ['header-0', 'usage-3', 'about-1', 'built-2'],
     'upward move: dragged block takes the drop-target visual slot')
 })
+
+test('moveBlock clamps an out-of-range high toIndex to the end (no holes)', () => {
+  const result = moveBlock(sampleDoc, 'header-0', 99)
+  const ids = result.blocks.map(b => b.id)
+  assert.equal(result.blocks.length, 4, 'block count preserved')
+  assert.ok(result.blocks.every(Boolean), 'no undefined entries')
+  assert.deepEqual(ids, ['about-1', 'started-2', 'usage-3', 'header-0'],
+    'dragged block lands at the end')
+})
+
+test('moveBlock clamps a negative toIndex to the front', () => {
+  // -1 is the revealing case: unclamped it lands one-from-the-end, not the front.
+  const result = moveBlock(sampleDoc, 'usage-3', -1)
+  const ids = result.blocks.map(b => b.id)
+  assert.equal(result.blocks.length, 4, 'block count preserved')
+  assert.ok(result.blocks.every(Boolean), 'no undefined entries')
+  assert.deepEqual(ids, ['usage-3', 'header-0', 'about-1', 'started-2'],
+    'dragged block lands at the front')
+})
