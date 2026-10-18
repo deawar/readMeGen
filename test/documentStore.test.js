@@ -20,6 +20,21 @@ const sampleDoc = {
   ]
 }
 
+test('moveBlock no-op returns a new Document (not the same reference)', () => {
+  // Moving a block to its current index must still return a NEW object
+  const result = moveBlock(sampleDoc, 'about-1', 1)
+
+  // Must NOT be the same reference as input doc
+  assert.notEqual(result, sampleDoc)
+
+  // blocks array must also be a new reference
+  assert.notEqual(result.blocks, sampleDoc.blocks)
+
+  // Input doc must be entirely unchanged
+  assert.deepEqual(result.blocks.map(b => b.id), sampleDoc.blocks.map(b => b.id))
+  assert.equal(sampleDoc.blocks.length, 4)
+})
+
 test('moveBlock reorders and preserves all blocks', () => {
   // Move block at index 3 to index 1
   const result = moveBlock(sampleDoc, 'usage-3', 1)

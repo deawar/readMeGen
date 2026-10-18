@@ -23,18 +23,14 @@ export function blockById (doc, id) {
  * @returns {{ meta: object, blocks: Array }}
  */
 export function moveBlock (doc, id, toIndex) {
-  const blocks = doc.blocks.slice()
-  const fromIndex = blocks.findIndex(b => b.id === id)
+  const fromIndex = doc.blocks.findIndex(b => b.id === id)
 
   if (fromIndex === -1 || fromIndex === toIndex) {
-    return doc
+    return { ...doc, blocks: doc.blocks.slice() }
   }
 
-  // Remove block from current position
-  const [block] = blocks.splice(fromIndex, 1)
-
-  // Insert at new position
-  blocks.splice(toIndex, 0, block)
+  const without = [...doc.blocks.slice(0, fromIndex), ...doc.blocks.slice(fromIndex + 1)]
+  const blocks = [...without.slice(0, toIndex), doc.blocks[fromIndex], ...without.slice(toIndex)]
 
   return { ...doc, blocks }
 }
