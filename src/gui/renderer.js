@@ -376,9 +376,11 @@ function appendAddSection () {
 
 function showPane (which) {
   // which: 'edit' | 'preview' | 'markdown'
-  canvas.style.display = which === 'edit' ? '' : 'none'
-  previewPane.style.display = which === 'preview' ? '' : 'none'
-  markdownPane.style.display = which === 'markdown' ? '' : 'none'
+  // Use explicit visible values, not '': the CSS defaults preview/markdown
+  // panes to display:none, so '' would fall back to that and keep them hidden.
+  canvas.style.display = which === 'edit' ? 'flex' : 'none'
+  previewPane.style.display = which === 'preview' ? 'block' : 'none'
+  markdownPane.style.display = which === 'markdown' ? 'block' : 'none'
 
   tabEdit.classList.toggle('active', which === 'edit')
   tabPreview.classList.toggle('active', which === 'preview')
