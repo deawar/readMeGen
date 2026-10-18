@@ -1,8 +1,19 @@
 # ReadMeGen
  ## Badges  
-[![GitHub issues](https://img.shields.io/github/issues/deawar/ReadMeGen?style=plastic)](undefined/network)[![GitHub forks](https://img.shields.io/github/forks/deawar/ReadMeGen?style=plastic)](undefined/network)[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg?style=plastic)](code_of_conduct.md) 
+[![Latest release](https://img.shields.io/github/v/release/deawar/readMeGen?style=plastic)](https://github.com/deawar/readMeGen/releases/latest)[![Downloads](https://img.shields.io/github/downloads/deawar/readMeGen/total?style=plastic)](https://github.com/deawar/readMeGen/releases)[![GitHub issues](https://img.shields.io/github/issues/deawar/ReadMeGen?style=plastic)](undefined/network)[![GitHub forks](https://img.shields.io/github/forks/deawar/ReadMeGen?style=plastic)](undefined/network)[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg?style=plastic)](code_of_conduct.md) 
 ## Description  
-  As a developer I wanted an easier way to create a readme.md file for my projects. This can be run from CLI and eventually as an electron app.
+  As a developer I wanted an easier way to create a readme.md file for my projects. It runs from the CLI **or** as a desktop (Electron) app.
+
+## Download  
+Prebuilt desktop installers for Windows, macOS, and Linux are published on the
+[**Releases**](https://github.com/deawar/readMeGen/releases/latest) page:
+
+* **Windows** — `readMeGen Setup x.y.z.exe` (installer) or the portable `.exe`
+* **macOS** — `readMeGen-x.y.z.dmg`
+* **Linux** — `readMeGen-x.y.z.AppImage` (or the `.deb`)
+
+> Builds are currently **unsigned**, so you may see a one-time Gatekeeper
+> (macOS) or SmartScreen (Windows) prompt on first launch.
 * [Installation](#installation)  
 * [Configuration](#configuration)  
 * [Usage](#usage)
