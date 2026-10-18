@@ -166,18 +166,26 @@ Defense-in-depth on the two HIGH findings, all landed:
   No change; design §4.8's "edits render live" is intentionally not pursued. **All
   functional minors are now closed.**
 
-### ✅ DONE — packaging & distribution (CI release)
+### ✅ DONE — packaging & distribution (CI release) — 🚀 v1.0.0 SHIPPED 2026-10-18
+- ✅ **v1.0.0 PUBLISHED:** https://github.com/deawar/readMeGen/releases/tag/v1.0.0
+  (12 assets: win nsis+portable, **mac universal** dmg+zip, linux AppImage+deb, +
+  auto-update yml/blockmaps). README has release + downloads shields badges.
 - ✅ **DONE (`389c2bc`): electron-builder + GitHub Actions release.** `package.json`
   `build` config (appId `com.deawar.readmegen`, output `dist/`, targets: win
-  nsis+portable, mac dmg+zip, linux AppImage+deb; GitHub publish provider,
-  `releaseType: draft`). Scripts: `npm run pack` (--dir local smoke), `npm run dist`.
-  `.github/workflows/release.yml`: on `v*` tag push (or manual dispatch), a 3-OS
-  matrix (windows/macos/ubuntu-latest) runs tests then `electron-builder --publish
-  always` on tags / `never` on manual runs. **Unsigned** (`CSC_IDENTITY_AUTO_DISCOVERY
-  =false`); `GH_TOKEN` = Actions token with `contents:write`.
-  - **To cut a release:** `git tag v1.0.0 && git push origin v1.0.0` → CI builds all
-    three OSes and attaches binaries to a **draft** release → review on the Releases
-    page and click **Publish**. Link from README via a shields.io release badge.
+  nsis+portable, **mac dmg+zip arch `universal`** (`787d69f`), linux AppImage+deb;
+  GitHub publish provider, `releaseType: draft`). Scripts: `npm run pack` (--dir local
+  smoke), `npm run dist`. `.github/workflows/release.yml`: on `v*` tag push (or manual
+  dispatch), a 3-OS matrix (windows/macos/ubuntu-latest) runs tests then
+  `electron-builder --publish always` on tags / `never` on manual runs. **Unsigned**
+  (`CSC_IDENTITY_AUTO_DISCOVERY=false`); `GH_TOKEN` = Actions token with `contents:write`.
+  - **To cut the next release:** bump `version` in package.json, then
+    `git tag vX.Y.Z && git push origin vX.Y.Z` → CI builds all three OSes into a
+    **draft** release → review on the Releases page → **Publish** (or
+    `gh release edit vX.Y.Z --draft=false --latest`).
+  - **CI gotchas already fixed (don't regress):** (1) `.gitattributes` forces LF so the
+    Windows golden-snapshot test passes (CRLF checkout broke it); (2) `author` MUST be
+    object form with `email` or the linux `.deb` build fails; (3) macos-latest is Apple
+    Silicon → `arch: universal` to cover Intel too.
   - **Known local gotcha:** `npm run pack` fails with `EPERM: rename ...win-unpacked`
     under OneDrive (file-sync lock). Build to a non-OneDrive output
     (`-c.directories.output=C:/Temp/...`) locally; CI runners are unaffected.
