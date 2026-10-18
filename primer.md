@@ -145,6 +145,13 @@ hardened. Close the defense-in-depth gaps before adding features:
    invokes that don't originate from our own `app://local` window, so a hypothetical
    compromised/injected frame can't drive the privileged channels. Cheap; add in
    `registerHandlers` (keep the pure handler fns + their tests intact).
+3. **Lock down navigation (zero-dep, do first — cheapest).** In `main.cjs`, stop the
+   renderer from ever leaving `app://local`: `win.webContents.on('will-navigate', (e,
+   url) => { if (!url.startsWith('app://local/')) { e.preventDefault(); shell.openExternal(url) } })`
+   and `win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))`. Without this,
+   a link in an untrusted README could navigate the window to a remote page (where the
+   `markdown-it` HTML + any injected content would run in a non-`app://` origin). The
+   push-time security review re-flagged the XSS surface specifically for this.
 
 ### Functional deferred minors (next)
 - Manifest drop reads `files[0]` with **no size/type guard** — cap size, restrict to
