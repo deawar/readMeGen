@@ -32,7 +32,8 @@ export function moveBlock (doc, id, toIndex) {
   }
 
   const without = [...doc.blocks.slice(0, fromIndex), ...doc.blocks.slice(fromIndex + 1)]
-  const blocks = [...without.slice(0, toIndex), doc.blocks[fromIndex], ...without.slice(toIndex)]
+  const insertAt = fromIndex < toIndex ? toIndex - 1 : toIndex
+  const blocks = [...without.slice(0, insertAt), doc.blocks[fromIndex], ...without.slice(insertAt)]
 
   return { ...doc, blocks }
 }

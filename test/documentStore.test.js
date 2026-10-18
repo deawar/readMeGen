@@ -155,17 +155,50 @@ test('blockById returns undefined if no block matches', () => {
   assert.equal(block, undefined)
 })
 
-test('moveBlock downward: block lands at the target slot, not one past it', () => {
-  // doc ids: [header-0, about-1, started-2, usage-3]
-  // Move 'about-1' (index 1) to index 3 (the slot currently held by 'usage-3')
-  // Expected result: [header-0, started-2, usage-3, about-1]
-  // i.e. 'about-1' occupies the position that 'usage-3' originally held,
-  // with 'usage-3' shifting up — NOT landing one past index 3.
-  const result = moveBlock(sampleDoc, 'about-1', 3)
+test('moveBlock downward (non-tail): block lands at the drop-target slot, not one past it', () => {
+  // Build a 4-block doc with ids: [header-0, about-1, built-2, usage-3]
+  // Drag 'about-1' (index 1) onto the card at index 3 ('usage-3').
+  // Expected: about-1 lands at the slot usage-3 held (index 2 in the result),
+  // with built-2 shifting up — NOT one past index 3.
+  // Result order: ['header-0', 'built-2', 'about-1', 'usage-3']
+  const doc4 = {
+    meta: {},
+    blocks: [
+      { id: 'header-0', type: 'header', level: 2, body: '' },
+      { id: 'about-1', type: 'about', level: 2, body: '' },
+      { id: 'built-2', type: 'built', level: 2, body: '' },
+      { id: 'usage-3', type: 'usage', level: 2, body: '' }
+    ]
+  }
 
-  assert.equal(result.blocks.length, sampleDoc.blocks.length, 'block count preserved')
+  const result = moveBlock(doc4, 'about-1', 3)
+
+  assert.equal(result.blocks.length, 4, 'block count preserved')
 
   const ids = result.blocks.map(b => b.id)
-  assert.deepEqual(ids, ['header-0', 'started-2', 'usage-3', 'about-1'],
-    'downward move must place block at the drop-target slot')
+  assert.deepEqual(ids, ['header-0', 'built-2', 'about-1', 'usage-3'],
+    'downward move: dragged block takes the drop-target visual slot')
+})
+
+test('moveBlock upward: block lands at the target slot', () => {
+  // Build a 4-block doc with ids: [header-0, about-1, built-2, usage-3]
+  // Drag 'usage-3' (index 3) onto the card at index 1 ('about-1').
+  // Expected: ['header-0', 'usage-3', 'about-1', 'built-2']
+  const doc4 = {
+    meta: {},
+    blocks: [
+      { id: 'header-0', type: 'header', level: 2, body: '' },
+      { id: 'about-1', type: 'about', level: 2, body: '' },
+      { id: 'built-2', type: 'built', level: 2, body: '' },
+      { id: 'usage-3', type: 'usage', level: 2, body: '' }
+    ]
+  }
+
+  const result = moveBlock(doc4, 'usage-3', 1)
+
+  assert.equal(result.blocks.length, 4, 'block count preserved')
+
+  const ids = result.blocks.map(b => b.id)
+  assert.deepEqual(ids, ['header-0', 'usage-3', 'about-1', 'built-2'],
+    'upward move: dragged block takes the drop-target visual slot')
 })
