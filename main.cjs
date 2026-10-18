@@ -30,6 +30,9 @@ async function onReady () {
   const handlers = await import('./src/gui/handlers.js')
   const { registerHandlers } = await import('./src/gui/registerHandlers.js')
 
+  // Main-held mutable path state — the renderer must NOT control the write path.
+  const pathState = { current: null }
+
   // Real dependency bag
   const deps = {
     dialog: {
@@ -49,7 +52,8 @@ async function onReady () {
       return execFileSync('git', ['config', key], { encoding: 'utf8' }).trim()
     },
     md: new (require('markdown-it'))({ html: true, linkify: true }),
-    token: process.env.TOKEN
+    token: process.env.TOKEN,
+    pathState
   }
 
   registerHandlers(ipcMain, handlers, deps)

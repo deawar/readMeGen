@@ -7,6 +7,7 @@ import * as docOps from './docOps.js'
 
 /**
  * Show an open-file dialog and parse the chosen README.
+ * Sets deps.pathState.current to the chosen path on success.
  * @param {object} deps
  * @returns {Promise<{canceled:true}|{path:string, document:object}>}
  */
@@ -14,6 +15,7 @@ export async function openReadme (deps) {
   const { canceled, filePaths } = await deps.dialog.showOpen()
   if (canceled) return { canceled: true }
   const path = filePaths[0]
+  deps.pathState.current = path
   const text = await deps.readFile(path)
   const document = parseDocument(text)
   return { path, document }
@@ -22,19 +24,23 @@ export async function openReadme (deps) {
 // ── saveReadme ────────────────────────────────────────────────────────────────
 
 /**
- * Serialize a document and write it; prompt for a path if none supplied.
+ * Serialize a document and write it to the main-held path.
+ * The renderer-supplied path (if any) is intentionally ignored — the main
+ * process owns the write destination to prevent path-traversal attacks.
+ * If deps.pathState.current is null, a save dialog is shown.
  * @param {object} deps
- * @param {{document:object, path?:string}} payload
+ * @param {{document:object}} payload  (any path key in payload is ignored)
  * @returns {Promise<{canceled:true}|{path:string}>}
  */
-export async function saveReadme (deps, { document, path } = {}) {
-  const text = serializeDocument(document)
-  let savePath = path
+export async function saveReadme (deps, { document } = {}) {
+  let savePath = deps.pathState.current
   if (!savePath) {
     const result = await deps.dialog.showSave()
     if (result.canceled) return { canceled: true }
     savePath = result.filePath
+    deps.pathState.current = savePath
   }
+  const text = serializeDocument(document)
   await deps.writeFile(savePath, text)
   return { path: savePath }
 }

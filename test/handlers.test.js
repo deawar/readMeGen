@@ -30,6 +30,7 @@ function makeDeps (overrides) {
     md: { render: (s) => '<p>' + s + '</p>' },
     token: undefined,
     client: undefined,
+    pathState: { current: null },
     _store: store,
     ...overrides
   }
@@ -53,6 +54,32 @@ test('openReadme returns parsed document for a chosen file', async () => {
   assert.ok(Array.isArray(result.document.blocks), 'document has blocks')
 })
 
+test('openReadme sets pathState.current to the opened path', async () => {
+  const sampleMd = '## About\n\nHello world\n'
+  const deps = makeDeps({
+    dialog: {
+      showOpen: () => ({ canceled: false, filePaths: ['/fake/README.md'] }),
+      showSave: () => ({ canceled: false, filePath: '/fake/out.md' })
+    },
+    readFile: async () => sampleMd
+  })
+  assert.equal(deps.pathState.current, null, 'pathState.current starts null')
+  await openReadme(deps)
+  assert.equal(deps.pathState.current, '/fake/README.md', 'pathState.current set to opened path')
+})
+
+test('openReadme does not set pathState.current when canceled', async () => {
+  const deps = makeDeps({
+    dialog: {
+      showOpen: () => ({ canceled: true, filePaths: [] }),
+      showSave: () => ({ canceled: false, filePath: '/fake/out.md' })
+    },
+    readFile: async () => ''
+  })
+  await openReadme(deps)
+  assert.equal(deps.pathState.current, null, 'pathState.current remains null on cancel')
+})
+
 test('openReadme handles cancel', async () => {
   let readCalled = false
   const deps = makeDeps({
@@ -69,20 +96,21 @@ test('openReadme handles cancel', async () => {
 
 // ── saveReadme ────────────────────────────────────────────────────────────────
 
-test('saveReadme serializes and writes when path is given', async () => {
+test('saveReadme serializes and writes when pathState.current is set', async () => {
   const { document } = await newReadme()
   const written = {}
   const deps = makeDeps({
+    pathState: { current: '/fake/out.md' },
     writeFile: async (p, text) => { written[p] = text }
   })
-  const result = await saveReadme(deps, { document, path: '/fake/out.md' })
+  const result = await saveReadme(deps, { document })
   assert.ok(!result.canceled, 'not canceled')
   assert.equal(result.path, '/fake/out.md')
   const expectedText = serializeDocument(document)
   assert.equal(written['/fake/out.md'], expectedText, 'wrote serialized text')
 })
 
-test('saveReadme prompts for path when none supplied', async () => {
+test('saveReadme prompts for path when pathState.current is null', async () => {
   const { document } = await newReadme()
   const written = {}
   const deps = makeDeps({
@@ -92,6 +120,16 @@ test('saveReadme prompts for path when none supplied', async () => {
   assert.ok(!result.canceled, 'not canceled')
   assert.equal(result.path, '/fake/out.md', 'uses dialog-chosen path')
   assert.ok(written['/fake/out.md'], 'wrote to dialog path')
+})
+
+test('saveReadme sets pathState.current when falling back to dialog', async () => {
+  const { document } = await newReadme()
+  const deps = makeDeps({
+    writeFile: async () => {}
+  })
+  assert.equal(deps.pathState.current, null, 'pathState.current starts null')
+  await saveReadme(deps, { document })
+  assert.equal(deps.pathState.current, '/fake/out.md', 'pathState.current updated to dialog path')
 })
 
 test('saveReadme handles cancel from save dialog', async () => {
@@ -107,6 +145,23 @@ test('saveReadme handles cancel from save dialog', async () => {
   const result = await saveReadme(deps, { document })
   assert.deepEqual(result, { canceled: true })
   assert.equal(writeCalled, false, 'writeFile never called when canceled')
+})
+
+// ── SECURITY: renderer-supplied path must be ignored ──────────────────────────
+
+test('saveReadme SECURITY: ignores renderer-supplied path, uses pathState.current', async () => {
+  const { document } = await newReadme()
+  const writtenPaths = []
+  const deps = makeDeps({
+    pathState: { current: '/safe/path.md' },
+    writeFile: async (p, text) => { writtenPaths.push(p) }
+  })
+  // Renderer (possibly compromised) supplies an evil path in the payload
+  const result = await saveReadme(deps, { document, path: '/evil/path' })
+  assert.ok(!result.canceled, 'not canceled')
+  assert.equal(result.path, '/safe/path.md', 'returned path is the safe one')
+  assert.ok(writtenPaths.includes('/safe/path.md'), 'wrote to safe path')
+  assert.ok(!writtenPaths.includes('/evil/path'), 'did NOT write to evil path')
 })
 
 // ── newReadme ─────────────────────────────────────────────────────────────────
