@@ -1,0 +1,9 @@
+# Normalize all text files to LF on checkout, on every platform. Without this,
+# Windows CI checks out text with CRLF (autocrlf) and the byte-exact golden
+# snapshot test fails there while passing on macOS/Linux.
+* text=auto eol=lf
+
+# Binary assets must never be line-ending normalized.
+*.png binary
+*.ico binary
+*.icns binary
