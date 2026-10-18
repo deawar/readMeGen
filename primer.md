@@ -130,28 +130,24 @@ and the save path live only in main.
 
 ## NEXT STEPS
 
-### 🔴 HIGHEST PRIORITY — security hardening (deferred from 2b; do these first)
-The two HIGH findings from the automated review were mitigated but not maximally
-hardened. Close the defense-in-depth gaps before adding features:
-1. **Sanitize rendered markdown with DOMPurify.** `markdown-it` runs with `{html:true}`
-   (required — READMEs are HTML-rich), and its output is injected via `innerHTML` in
-   the renderer (block render + Preview). The strict CSP blocks script/inline-handler
-   execution, but DOMPurify is belt-and-suspenders against a CSP gap. Decide where it
-   runs: cleanest is sanitizing in MAIN inside `render-markdown` (needs DOMPurify +
-   jsdom), or in the renderer (DOMPurify browser build, vendored — no bundler). Allow
-   the README's legitimate HTML (div/img/a/details/headings) while stripping
-   `script`/`on*`. New dep(s) — flag for Dean (he was dependency-careful).
-2. **Validate `event.senderFrame` in the IPC handlers / registerHandlers.** Reject
-   invokes that don't originate from our own `app://local` window, so a hypothetical
-   compromised/injected frame can't drive the privileged channels. Cheap; add in
-   `registerHandlers` (keep the pure handler fns + their tests intact).
-3. **Lock down navigation (zero-dep, do first — cheapest).** In `main.cjs`, stop the
-   renderer from ever leaving `app://local`: `win.webContents.on('will-navigate', (e,
-   url) => { if (!url.startsWith('app://local/')) { e.preventDefault(); shell.openExternal(url) } })`
-   and `win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))`. Without this,
-   a link in an untrusted README could navigate the window to a remote page (where the
-   `markdown-it` HTML + any injected content would run in a non-`app://` origin). The
-   push-time security review re-flagged the XSS surface specifically for this.
+### 🔴 HIGHEST PRIORITY — security hardening
+Progress on the two HIGH findings' defense-in-depth:
+- ✅ **DONE (`bd5ff00`): Navigation lockdown** — `main.cjs` `will-navigate` opens
+  off-origin links via `shell.openExternal` (never navigates the window off
+  `app://local`); `setWindowOpenHandler` denies new windows.
+- ✅ **DONE (`bd5ff00`): IPC sender validation** — `registerHandlers.isTrustedSender`
+  rejects invokes whose `senderFrame` origin isn't `app://local/` before any handler
+  runs (unit-tested in `test/guiWiring.test.js`).
+- 🔴 **REMAINING — Sanitize rendered markdown with DOMPurify.** `markdown-it` runs with
+  `{html:true}` (required — READMEs are HTML-rich) and its output is injected via
+  `innerHTML` in the renderer (block render + Preview). The strict CSP blocks
+  script/inline-handler execution, but DOMPurify is belt-and-suspenders against a CSP
+  gap. **Needs a decision (worth a quick brainstorm):** sanitize in MAIN inside
+  `render-markdown` (DOMPurify + jsdom) vs. in the renderer (DOMPurify browser build,
+  vendored — no bundler). Allow legitimate README HTML (div/img/a/details/headings)
+  while stripping `script`/`on*`/`meta`/`form`/`base`/`link`/`style`. New dep(s) —
+  flag for Dean (dependency-careful). The push-time security review will keep
+  re-flagging the `innerHTML` XSS surface until this lands.
 
 ### Functional deferred minors (next)
 - Manifest drop reads `files[0]` with **no size/type guard** — cap size, restrict to
