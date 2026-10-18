@@ -15,6 +15,10 @@ protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } }
 ])
 
+// Set in onReady (dynamic import of the ESM helper). Guards which off-origin
+// URLs may be handed to the OS: http/https only. Defaults to deny until loaded.
+let safeExternalUrl = (_url) => null
+
 function createWindow () {
   const win = new BrowserWindow({
     width: 1200,
@@ -30,10 +34,10 @@ function createWindow () {
   // README must never navigate the window to a remote page (where rendered
   // HTML would run outside our CSP/origin); open such links externally instead.
   win.webContents.on('will-navigate', (e, url) => {
-    if (!url.startsWith('app://local/')) {
-      e.preventDefault()
-      shell.openExternal(url).catch(() => {})
-    }
+    if (url.startsWith('app://local/')) return
+    e.preventDefault()
+    const href = safeExternalUrl(url)
+    if (href) shell.openExternal(href).catch(() => {})
   })
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
 
@@ -47,6 +51,7 @@ async function onReady () {
   // Register the app:// protocol handler before creating the window so the
   // first loadURL call resolves correctly.
   const { resolveAppPath } = await import('./src/gui/appProtocol.js')
+  safeExternalUrl = (await import('./src/gui/navigation.js')).safeExternalUrl
   protocol.handle('app', (request) => {
     const filePath = resolveAppPath(__dirname, request.url)
     if (!filePath) return new Response('Forbidden', { status: 403 })
