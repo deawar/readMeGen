@@ -8,7 +8,9 @@
     "start": "electron .",
     "cli": "node src/cli/index.js",
     "lint": "standard",
-    "test": "node --test"
+    "test": "node --test",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
   },
   "repository": {
     "type": "git",
@@ -29,11 +31,52 @@
   },
   "devDependencies": {
     "electron": "^44.0.0",
+    "electron-builder": "^26.15.3",
     "standard": "^17.0.0"
   },
   "standard": {
     "envs": [
       "browser"
     ]
+  },
+  "build": {
+    "appId": "com.deawar.readmegen",
+    "productName": "readMeGen",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "index.html",
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.developer-tools"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Development"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "deawar",
+      "repo": "readMeGen",
+      "releaseType": "draft"
+    }
   }
 }
