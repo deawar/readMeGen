@@ -233,6 +233,20 @@ test('applyManifest returns {error} on invalid manifest, document unchanged', as
   assert.deepEqual(result.document, document, 'document unchanged')
 })
 
+test('applyManifest rejects an oversized manifest, document unchanged', async () => {
+  const { document } = await newReadme()
+  const deps = makeDeps()
+  const huge = 'x'.repeat(2_000_000)
+  const result = await applyManifest(deps, {
+    document,
+    filename: 'package.json',
+    contents: huge
+  })
+  assert.ok(result.error, 'has error message')
+  assert.match(result.error, /too large/i)
+  assert.equal(result.document, document, 'document unchanged')
+})
+
 // ── resolveAuthor ─────────────────────────────────────────────────────────────
 
 test('resolveAuthor falls back to null when no token and git config empty', async () => {
@@ -281,6 +295,21 @@ test('resolveAuthor never throws even if exec throws', async () => {
   const deps = makeDeps({ exec: () => { throw new Error('no git') } })
   const result = await resolveAuthor(deps)
   assert.deepEqual(result, { user: null })
+})
+
+test('resolveAuthor keeps the name when git config user.email is unset', async () => {
+  // `git config user.email` exits non-zero (exec throws) when unset. Resolving
+  // each key independently must not discard a present user.name.
+  const deps = makeDeps({
+    exec: (arg) => {
+      if (arg === 'user.name') return 'Dean Warren'
+      throw new Error('user.email not set')
+    }
+  })
+  const result = await resolveAuthor(deps)
+  assert.ok(result.user, 'has user despite missing email')
+  assert.equal(result.user.name, 'Dean Warren')
+  assert.equal(result.user.email, '')
 })
 
 // ── applyAuthor ───────────────────────────────────────────────────────────────

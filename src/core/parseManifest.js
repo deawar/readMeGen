@@ -17,7 +17,9 @@ export function parseManifest (filename, contents) {
   if (filename.endsWith('package.json')) {
     return parsePackageJson(contents)
   }
-  if (filename.endsWith('requirements.txt') || filename.endsWith('.txt')) {
+  // Only requirements*.txt (requirements.txt, requirements-dev.txt, …) — not
+  // any arbitrary .txt dropped on the canvas.
+  if (/(^|[/\\])requirements[\w-]*\.txt$/i.test(filename)) {
     return parseRequirementsTxt(contents)
   }
   throw new Error('unsupported manifest: ' + filename)
