@@ -1,10 +1,19 @@
 // main.cjs
-const { app, BrowserWindow, ipcMain } = require('electron')
-const path = require('path')
+'use strict'
 
-// Icon used for the drag-and-drop demo. Ship this as a committed asset
-// rather than downloading it at runtime.
-const iconName = path.join(__dirname, 'iconForDragAndDrop.png')
+require('dotenv').config()
+
+const { app, BrowserWindow, ipcMain, dialog, protocol, net } = require('electron')
+const path = require('node:path')
+const { pathToFileURL } = require('node:url')
+const { readFile, writeFile } = require('node:fs/promises')
+const { execFileSync } = require('node:child_process')
+
+// Must be called before app is ready — registers the scheme as privileged so
+// ES modules load over app:// without CORS/CSP issues that block file://.
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } }
+])
 
 function createWindow () {
   const win = new BrowserWindow({
@@ -17,25 +26,66 @@ function createWindow () {
     }
   })
 
-  win.loadFile('index.html')
+  win.loadURL('app://local/index.html').catch((err) => {
+    console.error('loadURL failed:', err)
+  })
   return win
 }
 
-app.whenReady().then(() => {
+async function onReady () {
+  // Register the app:// protocol handler before creating the window so the
+  // first loadURL call resolves correctly.
+  const { resolveAppPath } = await import('./src/gui/appProtocol.js')
+  protocol.handle('app', (request) => {
+    const filePath = resolveAppPath(__dirname, request.url)
+    if (!filePath) return new Response('Forbidden', { status: 403 })
+    return net.fetch(pathToFileURL(filePath).toString())
+  })
+
   createWindow()
+
+  // Dynamic import of ESM modules from CJS
+  const handlers = await import('./src/gui/handlers.js')
+  const { registerHandlers } = await import('./src/gui/registerHandlers.js')
+
+  // Main-held mutable path state — the renderer must NOT control the write path.
+  const pathState = { current: null }
+
+  // Real dependency bag
+  const deps = {
+    dialog: {
+      showOpen () {
+        return dialog.showOpenDialog({
+          properties: ['openFile'],
+          filters: [{ name: 'Markdown', extensions: ['md'] }]
+        })
+      },
+      showSave () {
+        return dialog.showSaveDialog({ defaultPath: 'README.md' })
+      }
+    },
+    readFile: (filePath) => readFile(filePath, 'utf8'),
+    writeFile: (filePath, text) => writeFile(filePath, text, 'utf8'),
+    exec (key) {
+      return execFileSync('git', ['config', key], { encoding: 'utf8', shell: false }).trim()
+    },
+    md: new (require('markdown-it'))({ html: true, linkify: true }),
+    token: process.env.TOKEN,
+    pathState
+  }
+
+  registerHandlers(ipcMain, handlers, deps)
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow()
     }
   })
-})
+}
 
-ipcMain.on('ondragstart', (event, filePath) => {
-  event.sender.startDrag({
-    file: path.join(__dirname, filePath),
-    icon: iconName
-  })
+app.whenReady().then(onReady).catch((err) => {
+  console.error('Failed to initialise app:', err)
+  app.quit()
 })
 
 app.on('window-all-closed', () => {

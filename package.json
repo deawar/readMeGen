@@ -22,10 +22,14 @@
     "dotenv": "^16.0.1",
     "figlet": "^1.5.2",
     "inquirer": "^9.0.0",
+    "markdown-it": "^14.0.0",
     "open": "^8.4.0"
   },
   "devDependencies": {
     "electron": "^44.0.0",
     "standard": "^17.0.0"
+  },
+  "standard": {
+    "envs": ["browser"]
   }
 }
