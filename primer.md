@@ -161,10 +161,10 @@ Defense-in-depth on the two HIGH findings, all landed:
   `package.json`/`requirements*.txt`; applyManifest rejects >1 MB; renderer pre-checks);
   `resolveAuthor` resolves `user.name`/`user.email` independently; `moveBlock` clamps
   `toIndex` to `[0, length]`; `browser` eslint env scoped to renderer.js (not project-wide).
-- 🟡 **REMAINING (design decision): live rendered preview while editing** a block —
-  currently shows markdown source until blur (deliberate **Option B**). Reconcile with
-  design §4.8 "edits render live" **only if desired** — it changes the editing feel and
-  the Option B ruling, so it's Dean's call, not a mechanical fix.
+- ✅ **RESOLVED AS DESIGNED (2026-10-18): live rendered preview while editing** — Dean
+  chose to **keep Option B** (block shows raw markdown while editing, re-renders on blur).
+  No change; design §4.8's "edits render live" is intentionally not pursued. **All
+  functional minors are now closed.**
 
 ### ✅ DONE — packaging & distribution (CI release)
 - ✅ **DONE (`389c2bc`): electron-builder + GitHub Actions release.** `package.json`
