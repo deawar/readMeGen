@@ -74,7 +74,7 @@ test('each registered handler invokes the corresponding handler fn with deps and
   const entry = fakeIpcMain._registered.find(r => r.channel === 'render-markdown')
   assert.ok(entry, 'render-markdown handler registered')
 
-  const fakeMdDeps = { md: { render: (s) => '<b>' + s + '</b>' } }
+  const fakeMdDeps = { md: { render: (s) => '<b>' + s + '</b>' }, sanitize: (html) => html }
   registerHandlers(fakeIpcMain, handlers, fakeMdDeps)
   const entry2 = fakeIpcMain._registered.filter(r => r.channel === 'render-markdown').pop()
   const trusted = { senderFrame: { url: 'app://local/index.html' } }

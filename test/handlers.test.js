@@ -28,6 +28,7 @@ function makeDeps (overrides) {
     writeFile: async (p, text) => { store[p] = text },
     exec: () => '',
     md: { render: (s) => '<p>' + s + '</p>' },
+    sanitize: (html) => html,
     token: undefined,
     client: undefined,
     pathState: { current: null },
@@ -366,4 +367,13 @@ test('renderMarkdown returns html from the injected renderer', async () => {
   const deps = makeDeps()
   const result = await renderMarkdown(deps, { markdown: 'hello' })
   assert.deepEqual(result, { html: '<p>hello</p>' })
+})
+
+test('renderMarkdown passes rendered html through the injected sanitizer', async () => {
+  const deps = makeDeps({
+    md: { render: (s) => '<p>' + s + '</p><script>alert(1)</script>' },
+    sanitize: (html) => html.replace(/<script>.*?<\/script>/g, '')
+  })
+  const result = await renderMarkdown(deps, { markdown: 'hi' })
+  assert.deepEqual(result, { html: '<p>hi</p>' })
 })

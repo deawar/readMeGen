@@ -185,12 +185,14 @@ export async function lookupUser (deps, { username }) {
 // ── renderMarkdown ────────────────────────────────────────────────────────────
 
 /**
- * Render markdown to HTML using the injected md renderer.
+ * Render markdown to HTML and sanitize it before it reaches the renderer.
+ * Sanitization is mandatory: deps.sanitize is the main-side DOMPurify choke
+ * point, so a missing sanitizer must fail loudly rather than pass raw HTML.
  * @param {object} deps
  * @param {{markdown:string}} payload
  * @returns {Promise<{html:string}>}
  */
 export async function renderMarkdown (deps, { markdown }) {
-  const html = deps.md.render(markdown)
+  const html = deps.sanitize(deps.md.render(markdown))
   return { html }
 }
