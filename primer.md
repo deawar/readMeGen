@@ -132,9 +132,12 @@ and the save path live only in main.
 
 ### 🔴 HIGHEST PRIORITY — security hardening
 Progress on the two HIGH findings' defense-in-depth:
-- ✅ **DONE (`bd5ff00`): Navigation lockdown** — `main.cjs` `will-navigate` opens
-  off-origin links via `shell.openExternal` (never navigates the window off
-  `app://local`); `setWindowOpenHandler` denies new windows.
+- ✅ **DONE (`bd5ff00`, hardened `3a59045`): Navigation lockdown** — `main.cjs`
+  `will-navigate` keeps the window on `app://local` and opens off-origin links via
+  `shell.openExternal`, but ONLY through the tested `safeExternalUrl` scheme allowlist
+  (`src/gui/navigation.js`: http/https/mailto only — `file:`/`smb:`/`javascript:`/OS
+  handlers are dropped to prevent protocol-handler abuse). `setWindowOpenHandler`
+  denies new windows.
 - ✅ **DONE (`bd5ff00`): IPC sender validation** — `registerHandlers.isTrustedSender`
   rejects invokes whose `senderFrame` origin isn't `app://local/` before any handler
   runs (unit-tested in `test/guiWiring.test.js`).
