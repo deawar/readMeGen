@@ -5,15 +5,21 @@
   As a developer I wanted an easier way to create a readme.md file for my projects. It runs from the CLI **or** as a desktop (Electron) app.
 
 ## Download  
-Prebuilt desktop installers for Windows, macOS, and Linux are published on the
-[**Releases**](https://github.com/deawar/readMeGen/releases/latest) page:
+Prebuilt desktop installers (current release **v1.0.0**) — direct links below, or
+browse **every version** on the [Releases page](https://github.com/deawar/readMeGen/releases/latest).
 
-* **Windows** — `readMeGen Setup x.y.z.exe` (installer) or the portable `.exe`
-* **macOS** — `readMeGen-x.y.z.dmg`
-* **Linux** — `readMeGen-x.y.z.AppImage` (or the `.deb`)
+| Platform | Download |
+|----------|----------|
+| **Windows** — installer | [readMeGen-Setup-1.0.0.exe](https://github.com/deawar/readMeGen/releases/download/v1.0.0/readMeGen-Setup-1.0.0.exe) |
+| **Windows** — portable | [readMeGen-1.0.0.exe](https://github.com/deawar/readMeGen/releases/download/v1.0.0/readMeGen-1.0.0.exe) |
+| **macOS** — Intel + Apple Silicon (universal) | [readMeGen-1.0.0-universal.dmg](https://github.com/deawar/readMeGen/releases/download/v1.0.0/readMeGen-1.0.0-universal.dmg) |
+| **Linux** — Debian / Ubuntu (`.deb`) | [readmegen_1.0.0_amd64.deb](https://github.com/deawar/readMeGen/releases/download/v1.0.0/readmegen_1.0.0_amd64.deb) |
+| **Linux** — any distro (AppImage) | [readMeGen-1.0.0.AppImage](https://github.com/deawar/readMeGen/releases/download/v1.0.0/readMeGen-1.0.0.AppImage) |
 
-> Builds are currently **unsigned**, so you may see a one-time Gatekeeper
-> (macOS) or SmartScreen (Windows) prompt on first launch.
+> Builds are currently **unsigned**, so you may see a one-time Gatekeeper (macOS)
+> or SmartScreen (Windows) prompt on first launch. On Ubuntu, the AppImage needs
+> `libfuse2` (`libfuse2t64` on 24.04); `.deb` installs with
+> `sudo apt install ./readmegen_1.0.0_amd64.deb`.
 * [Installation](#installation)  
 * [Configuration](#configuration)  
 * [Usage](#usage)
